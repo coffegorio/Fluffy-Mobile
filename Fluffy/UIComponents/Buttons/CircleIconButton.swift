@@ -1,5 +1,5 @@
 //
-//  AuthBackButton.swift
+//  CircleIconButton.swift
 //  Fluffy
 //
 //  Created by Egor Matveev on 24.04.2026.
@@ -7,18 +7,20 @@
 
 import SwiftUI
 
-struct AuthBackButton: View {
+struct CircleIconButton: View {
+    let title: LocalizedStringKey
+    let systemImage: String
     let action: () -> Void
 
-    @ScaledMetric private var iconSize = AuthLayout.backButtonIconSize
+    @ScaledMetric private var iconSize = CircleIconButtonLayout.iconSize
 
     var body: some View {
         HStack {
-            Button("auth_back_button", systemImage: "chevron.left", action: action)
+            Button(title, systemImage: systemImage, action: action)
                 .font(.system(size: iconSize, weight: .semibold))
                 .foregroundStyle(.primary)
                 .labelStyle(.iconOnly)
-                .frame(width: AuthLayout.backButtonSize, height: AuthLayout.backButtonSize)
+                .frame(width: CircleIconButtonLayout.size, height: CircleIconButtonLayout.size)
                 .background(.white.opacity(0.92))
                 .clipShape(Circle())
                 .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
@@ -26,4 +28,9 @@ struct AuthBackButton: View {
             Spacer()
         }
     }
+}
+
+private enum CircleIconButtonLayout {
+    static let size: CGFloat = 40
+    static let iconSize: CGFloat = 16
 }

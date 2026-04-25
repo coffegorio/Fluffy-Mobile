@@ -15,7 +15,7 @@ struct WelcomeView: View {
     
     var body: some View {
         ZStack {
-            WelcomeBackgroundView()
+            PawBackgroundView()
         
             VStack {
                 Spacer()
@@ -37,7 +37,13 @@ struct WelcomeView: View {
                         
                         Spacer()
                     
-                        ContinueButton(action: onContinue)
+                        CapsuleActionButton(
+                            title: "welcome_continue_button",
+                            systemImage: "arrow.right",
+                            height: WelcomeLayout.continueButtonHeight,
+                            contentSpacing: WelcomeLayout.continueButtonContentSpacing,
+                            action: onContinue
+                        )
                     }
                     .padding(.horizontal, WelcomeLayout.horizontalPadding)
                     .padding(.top, WelcomeLayout.contentTopPadding)

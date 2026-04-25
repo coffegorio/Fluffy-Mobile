@@ -18,7 +18,12 @@ struct AuthActions: View {
 
     var body: some View {
         VStack(spacing: AuthLayout.bottomSectionSpacing) {
-            AuthPrimaryButton(action: onSignIn)
+            CapsuleActionButton(
+                title: "auth_sign_in_button",
+                height: AuthLayout.primaryButtonHeight,
+                fontSize: AuthLayout.primaryButtonFontSize,
+                action: onSignIn
+            )
             signUpRow
             orDivider
             socialButtons
@@ -40,19 +45,12 @@ struct AuthActions: View {
     }
 
     private var orDivider: some View {
-        HStack(spacing: AuthLayout.dividerSpacing) {
-            Rectangle()
-                .fill(Color(.systemGray4))
-                .frame(height: AuthLayout.dividerHeight)
-
-            Text("auth_or_continue_with")
-                .font(.system(size: dividerFontSize))
-                .foregroundStyle(.secondary)
-
-            Rectangle()
-                .fill(Color(.systemGray4))
-                .frame(height: AuthLayout.dividerHeight)
-        }
+        LabeledDivider(
+            title: "auth_or_continue_with",
+            fontSize: dividerFontSize,
+            spacing: AuthLayout.dividerSpacing,
+            lineHeight: AuthLayout.dividerHeight
+        )
     }
 
     private var socialButtons: some View {

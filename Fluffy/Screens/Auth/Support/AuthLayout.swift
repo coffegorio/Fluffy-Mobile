@@ -12,8 +12,6 @@ enum AuthLayout {
     static let horizontalPadding: CGFloat = 24
     static let contentTopPadding: CGFloat = 72
     static let backgroundBackButtonTopPadding: CGFloat = 12
-    static let backButtonSize: CGFloat = 40
-    static let backButtonIconSize: CGFloat = 16
     static let iconSize: CGFloat = 52
     static let iconTopPadding: CGFloat = 24
     static let iconBottomPadding: CGFloat = 16

@@ -20,7 +20,7 @@ struct AuthView: View {
 
     var body: some View {
         ZStack {
-            WelcomeBackgroundView()
+            PawBackgroundView()
 
             VStack {
                 Spacer()
@@ -38,7 +38,11 @@ struct AuthView: View {
             .ignoresSafeArea(edges: .bottom)
 
             VStack {
-                AuthBackButton(action: onBack)
+                CircleIconButton(
+                    title: "auth_back_button",
+                    systemImage: "chevron.left",
+                    action: onBack
+                )
                     .padding(.horizontal, AuthLayout.horizontalPadding)
                     .padding(.top, AuthLayout.backgroundBackButtonTopPadding)
 

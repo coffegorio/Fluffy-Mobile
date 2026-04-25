@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		DBCED7C22F9A0F980084CF3F /* Fluffy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fluffy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB9FD66B2F9C3DAE006D3BC2 /* Fluffy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fluffy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -33,16 +33,8 @@
 			isa = PBXGroup;
 			children = (
 				DBCED7C42F9A0F980084CF3F /* Fluffy */,
-				DBCED7C32F9A0F980084CF3F /* Products */,
+				DB9FD66B2F9C3DAE006D3BC2 /* Fluffy.app */,
 			);
-			sourceTree = "<group>";
-		};
-		DBCED7C32F9A0F980084CF3F /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				DBCED7C22F9A0F980084CF3F /* Fluffy.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -64,10 +56,8 @@
 				DBCED7C42F9A0F980084CF3F /* Fluffy */,
 			);
 			name = Fluffy;
-			packageProductDependencies = (
-			);
 			productName = Fluffy;
-			productReference = DBCED7C22F9A0F980084CF3F /* Fluffy.app */;
+			productReference = DB9FD66B2F9C3DAE006D3BC2 /* Fluffy.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -95,7 +85,7 @@
 			mainGroup = DBCED7B92F9A0F980084CF3F;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = DBCED7C32F9A0F980084CF3F /* Products */;
+			productRefGroup = DBCED7B92F9A0F980084CF3F;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -266,15 +256,19 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = fluffy.Fluffy;
+				PRODUCT_BUNDLE_IDENTIFIER = fluffy.Fluffyyyyy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -298,15 +292,19 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = fluffy.Fluffy;
+				PRODUCT_BUNDLE_IDENTIFIER = fluffy.Fluffyyyyy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

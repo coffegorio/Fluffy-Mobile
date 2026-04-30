@@ -5,17 +5,21 @@
 //  Created by Egor Matveev on 23.04.2026.
 //
 
+import Observation
 import SwiftUI
 
 struct ContentView: View {
+    @State private var coordinator = AppCoordinator()
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        @Bindable var coordinator = coordinator
+
+        NavigationStack(path: $coordinator.path) {
+            coordinator.rootView()
+                .navigationDestination(for: AppRoute.self) { route in
+                    coordinator.destination(for: route)
+                }
         }
-        .padding()
     }
 }
 

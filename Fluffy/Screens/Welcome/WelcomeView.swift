@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    var onContinue: () -> Void = {}
+    let viewModel: WelcomeViewModel
 
     @ScaledMetric private var titleSize = WelcomeLayout.titleSize
     @ScaledMetric private var subtitleSize = WelcomeLayout.subtitleSize
@@ -42,7 +42,7 @@ struct WelcomeView: View {
                             systemImage: "arrow.right",
                             height: WelcomeLayout.continueButtonHeight,
                             contentSpacing: WelcomeLayout.continueButtonContentSpacing,
-                            action: onContinue
+                            action: viewModel.continueTapped
                         )
                     }
                     .padding(.horizontal, WelcomeLayout.horizontalPadding)
@@ -59,5 +59,5 @@ struct WelcomeView: View {
 
 
 #Preview {
-    WelcomeView()
+    WelcomeView(viewModel: WelcomeViewModel(coordinator: nil))
 }

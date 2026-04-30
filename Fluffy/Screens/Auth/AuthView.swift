@@ -5,20 +5,15 @@
 //  Created by Egor Matveev on 24.04.2026.
 //
 
+import Observation
 import SwiftUI
 
 struct AuthView: View {
-    var onBack: () -> Void = {}
-    var onSignIn: () -> Void = {}
-    var onForgotPassword: () -> Void = {}
-    var onSignUp: () -> Void = {}
-    var onGoogleSignIn: () -> Void = {}
-    var onFacebookSignIn: () -> Void = {}
-
-    @State private var email: String = ""
-    @State private var password: String = ""
+    @State var viewModel: AuthViewModel
 
     var body: some View {
+        @Bindable var viewModel = viewModel
+
         ZStack {
             PawBackgroundView()
 
@@ -26,13 +21,13 @@ struct AuthView: View {
                 Spacer()
 
                 AuthPanel(
-                    email: $email,
-                    password: $password,
-                    onSignIn: onSignIn,
-                    onForgotPassword: onForgotPassword,
-                    onSignUp: onSignUp,
-                    onGoogleSignIn: onGoogleSignIn,
-                    onFacebookSignIn: onFacebookSignIn
+                    email: $viewModel.email,
+                    password: $viewModel.password,
+                    onSignIn: viewModel.signInTapped,
+                    onForgotPassword: viewModel.forgotPasswordTapped,
+                    onSignUp: viewModel.signUpTapped,
+                    onGoogleSignIn: viewModel.googleSignInTapped,
+                    onFacebookSignIn: viewModel.facebookSignInTapped
                 )
             }
             .ignoresSafeArea(edges: .bottom)
@@ -41,7 +36,7 @@ struct AuthView: View {
                 CircleIconButton(
                     title: "auth_back_button",
                     systemImage: "chevron.left",
-                    action: onBack
+                    action: viewModel.backTapped
                 )
                     .padding(.horizontal, AuthLayout.horizontalPadding)
                     .padding(.top, AuthLayout.backgroundBackButtonTopPadding)
@@ -53,5 +48,10 @@ struct AuthView: View {
 }
 
 #Preview {
-    AuthView()
+    AuthView(
+        viewModel: AuthViewModel(
+            coordinator: nil,
+            authService: MockAuthService()
+        )
+    )
 }

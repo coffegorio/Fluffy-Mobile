@@ -69,6 +69,23 @@
         }
       }
     },
+    "auth_generic_error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Something went wrong. Please try again."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Что-то пошло не так. Попробуйте еще раз."
+          }
+        }
+      }
+    },
     "auth_no_account_prefix" : {
       "extractionState" : "manual",
       "localizations" : {

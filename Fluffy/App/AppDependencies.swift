@@ -7,8 +7,12 @@
 
 struct AppDependencies {
     let authService: AuthServicing
+    let authSessionStore: AuthSessionStoring
+    let marketplaceService: MarketplaceServicing
 
     static let live = AppDependencies(
-        authService: MockAuthService()
+        authService: MockAuthService(),
+        authSessionStore: KeychainAuthSessionStore(),
+        marketplaceService: MockMarketplaceService()
     )
 }

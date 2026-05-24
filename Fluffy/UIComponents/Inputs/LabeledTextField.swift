@@ -14,6 +14,8 @@ struct LabeledTextField: View {
     let placeholder: String
     let icon: String
     var isSecure: Bool = false
+    var keyboardType: UIKeyboardType = .emailAddress
+    var accessibilityIdentifier: String?
 
     @Binding var text: String
 
@@ -31,17 +33,22 @@ struct LabeledTextField: View {
                 if isSecure {
                     SecureField(placeholder, text: $text)
                         .font(.system(size: LabeledTextFieldLayout.inputSize))
+                        .accessibilityLabel(label)
+                        .accessibilityIdentifier(accessibilityIdentifier ?? label)
                 } else {
                     TextField(placeholder, text: $text)
                         .font(.system(size: LabeledTextFieldLayout.inputSize))
-                        .keyboardType(.emailAddress)
+                        .keyboardType(keyboardType)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .accessibilityLabel(label)
+                        .accessibilityIdentifier(accessibilityIdentifier ?? label)
                 }
             }
             .padding(.horizontal, LabeledTextFieldLayout.fieldHorizontalPadding)
             .frame(height: LabeledTextFieldLayout.fieldHeight)
-            .background(Color(.systemGray6))
+            .background(Color(.systemGray6).opacity(0.62))
+            .fluffyGlass(cornerRadius: LabeledTextFieldLayout.fieldCornerRadius, tint: .white.opacity(0.12), isInteractive: true)
             .clipShape(RoundedRectangle(cornerRadius: LabeledTextFieldLayout.fieldCornerRadius))
         }
     }

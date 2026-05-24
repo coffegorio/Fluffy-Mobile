@@ -9,36 +9,44 @@ import SwiftUI
 
 struct AuthPanel: View {
     @Binding var email: String
-    @Binding var password: String
+    @Binding var code: String
 
-    let onSignIn: () -> Void
-    let onForgotPassword: () -> Void
-    let onSignUp: () -> Void
-    let onGoogleSignIn: () -> Void
-    let onFacebookSignIn: () -> Void
+    let step: AuthStep
+    let isLoading: Bool
+    let isPrimaryActionEnabled: Bool
+    let primaryButtonTitle: LocalizedStringKey
+    let errorMessage: String?
+    let onPrimaryAction: () -> Void
 
     var body: some View {
         ZStack {
             AuthWaveShape()
                 .fill(Color.white)
-                .ignoresSafeArea(edges: .bottom)
+                .ignoresSafeArea(.container, edges: .bottom)
 
             VStack(alignment: .leading, spacing: 0) {
                 AuthHeader()
 
                 AuthForm(
                     email: $email,
-                    password: $password,
-                    onForgotPassword: onForgotPassword
+                    code: $code,
+                    step: step
                 )
 
                 AuthActions(
-                    onSignIn: onSignIn,
-                    onSignUp: onSignUp,
-                    onGoogleSignIn: onGoogleSignIn,
-                    onFacebookSignIn: onFacebookSignIn
+                    title: primaryButtonTitle,
+                    isLoading: isLoading,
+                    isEnabled: isPrimaryActionEnabled,
+                    action: onPrimaryAction
                 )
                 .padding(.top, AuthLayout.actionsTopPadding)
+
+                if let errorMessage {
+                    Text(errorMessage)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(AppTheme.danger)
+                        .padding(.top, 12)
+                }
             }
             .padding(.horizontal, AuthLayout.horizontalPadding)
             .padding(.top, AuthLayout.contentTopPadding)

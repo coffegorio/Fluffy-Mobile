@@ -11,12 +11,34 @@ import SwiftUI
 @Observable
 final class AppCoordinator {
     var root: AppRoot = .welcome
-    var path = NavigationPath()
+    var path: [AppRoute] = []
 
     private let dependencies: AppDependencies
+    private var currentSession: AuthSession?
 
     init(dependencies: AppDependencies = .live) {
         self.dependencies = dependencies
+
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-ResetAuthSession") {
+            dependencies.authSessionStore.clearSession()
+        }
+
+        if ProcessInfo.processInfo.arguments.contains("-UITestAuthenticated") {
+            currentSession = AuthSession(
+                accessToken: "ui-test-token",
+                user: AuthUser(id: "tester@example.com", email: "tester@example.com"),
+                requiresProfileCompletion: false
+            )
+            root = .home
+            return
+        }
+        #endif
+
+        if let session = dependencies.authSessionStore.loadSession() {
+            currentSession = session
+            root = .home
+        }
     }
 
     @ViewBuilder
@@ -27,45 +49,50 @@ final class AppCoordinator {
         case .auth:
             AuthView(viewModel: makeAuthViewModel())
         case .home:
-            HomeView()
+            MainView(viewModel: makeMainViewModel())
         }
     }
 
     @ViewBuilder
     func destination(for route: AppRoute) -> some View {
         switch route {
-        case .signUp:
-            PlaceholderRouteView(title: "Sign Up")
-        case .forgotPassword:
-            PlaceholderRouteView(title: "Forgot Password")
+        case .auth:
+            AuthView(viewModel: makeAuthViewModel())
         }
     }
 }
 
 extension AppCoordinator: WelcomeCoordinating {
     func showAuth() {
-        root = .auth
-        path = NavigationPath()
+        path.append(AppRoute.auth)
     }
 }
 
 extension AppCoordinator: AuthCoordinating {
     func showWelcome() {
+        path = []
         root = .welcome
-        path = NavigationPath()
     }
 
-    func showSignUp() {
-        path.append(AppRoute.signUp)
-    }
-
-    func showForgotPassword() {
-        path.append(AppRoute.forgotPassword)
-    }
-
-    func showHome() {
+    func showHome(session: AuthSession) {
+        dependencies.authSessionStore.saveSession(session)
+        currentSession = session
+        path = []
         root = .home
-        path = NavigationPath()
+    }
+}
+
+extension AppCoordinator: MainCoordinating {
+    func updateSession(_ session: AuthSession) {
+        currentSession = session
+        dependencies.authSessionStore.saveSession(session)
+    }
+
+    func signOut() {
+        dependencies.authSessionStore.clearSession()
+        currentSession = nil
+        path = []
+        root = .welcome
     }
 }
 
@@ -78,6 +105,14 @@ private extension AppCoordinator {
         AuthViewModel(
             coordinator: self,
             authService: dependencies.authService
+        )
+    }
+
+    func makeMainViewModel() -> MainViewModel {
+        MainViewModel(
+            session: currentSession,
+            coordinator: self,
+            marketplaceService: dependencies.marketplaceService
         )
     }
 }

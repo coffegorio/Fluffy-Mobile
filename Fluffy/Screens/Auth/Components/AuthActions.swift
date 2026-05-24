@@ -8,64 +8,28 @@
 import SwiftUI
 
 struct AuthActions: View {
-    let onSignIn: () -> Void
-    let onSignUp: () -> Void
-    let onGoogleSignIn: () -> Void
-    let onFacebookSignIn: () -> Void
-
-    @ScaledMetric private var signUpFontSize = AuthLayout.signUpFontSize
-    @ScaledMetric private var dividerFontSize = AuthLayout.dividerFontSize
+    let title: LocalizedStringKey
+    let isLoading: Bool
+    let isEnabled: Bool
+    let action: () -> Void
 
     var body: some View {
-        VStack(spacing: AuthLayout.bottomSectionSpacing) {
-            CapsuleActionButton(
-                title: "auth_sign_in_button",
-                height: AuthLayout.primaryButtonHeight,
-                fontSize: AuthLayout.primaryButtonFontSize,
-                action: onSignIn
-            )
-            signUpRow
-            orDivider
-            socialButtons
-        }
-    }
+        Button(action: action) {
+            HStack(spacing: 8) {
+                if isLoading {
+                    ProgressView()
+                        .tint(.white)
+                }
 
-    private var signUpRow: some View {
-        HStack(spacing: AuthLayout.signUpRowSpacing) {
-            Text("auth_no_account_prefix")
-                .font(.system(size: signUpFontSize))
-                .foregroundStyle(.secondary)
-
-            Button(action: onSignUp) {
-                Text("auth_sign_up_action")
-                    .font(.system(size: signUpFontSize, weight: .semibold))
-                    .foregroundStyle(.accent)
+                Text(title)
+                    .font(.system(size: AuthLayout.primaryButtonFontSize, weight: .bold))
             }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: AuthLayout.primaryButtonHeight)
+            .background(AppTheme.accent.opacity(isEnabled ? 0.92 : 0.45), in: Capsule())
+            .fluffyProminentGlass(cornerRadius: AuthLayout.primaryButtonHeight / 2, tint: AppTheme.accent.opacity(0.34))
         }
-    }
-
-    private var orDivider: some View {
-        LabeledDivider(
-            title: "auth_or_continue_with",
-            fontSize: dividerFontSize,
-            spacing: AuthLayout.dividerSpacing,
-            lineHeight: AuthLayout.dividerHeight
-        )
-    }
-
-    private var socialButtons: some View {
-        HStack(spacing: AuthLayout.socialButtonSpacing) {
-            SocialButton(
-                title: String(localized: "auth_social_google"),
-                icon: .google,
-                action: onGoogleSignIn
-            )
-
-            SocialButton(
-                title: String(localized: "auth_social_facebook"),
-                icon: .facebook,
-                action: onFacebookSignIn
-            )
-        }
+        .disabled(!isEnabled || isLoading)
     }
 }

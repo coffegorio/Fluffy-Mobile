@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// Кнопка входа через соцсеть с иконкой и подписью. Используется в паре (Google / Facebook).
+/// Кнопка входа через соцсеть с иконкой и подписью.
 struct SocialButton: View {
 
     let title: String
@@ -26,11 +26,12 @@ struct SocialButton: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: SocialButtonLayout.height)
-            .background(Color(.systemBackground))
+            .background(Color(.systemBackground).opacity(0.55))
+            .fluffyGlass(cornerRadius: SocialButtonLayout.cornerRadius, tint: .white.opacity(0.14), isInteractive: true)
             .clipShape(RoundedRectangle(cornerRadius: SocialButtonLayout.cornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: SocialButtonLayout.cornerRadius)
-                    .stroke(Color(.systemGray4), lineWidth: 1)
+                    .stroke(.white.opacity(0.42), lineWidth: 1)
             )
         }
         .buttonStyle(ScaleButtonStyle())
@@ -41,7 +42,7 @@ struct SocialButton: View {
 
 enum SocialIcon {
     case google
-    case facebook
+    case apple
 
     @ViewBuilder
     var view: some View {
@@ -56,10 +57,10 @@ enum SocialIcon {
                         endPoint: .bottomTrailing
                     )
                 )
-        case .facebook:
-            Text("f")
-                .font(.system(size: SocialButtonLayout.facebookIconSize, weight: .bold, design: .rounded))
-                .foregroundStyle(.blue)
+        case .apple:
+            Image(systemName: "apple.logo")
+                .font(.system(size: SocialButtonLayout.appleIconSize, weight: .semibold))
+                .foregroundStyle(.primary)
         }
     }
 }
@@ -78,7 +79,7 @@ private enum SocialButtonLayout {
     static let height: CGFloat = 52
     static let iconSize: CGFloat = 22
     static let googleIconSize: CGFloat = 20
-    static let facebookIconSize: CGFloat = 24
+    static let appleIconSize: CGFloat = 20
     static let iconSpacing: CGFloat = 10
     static let fontSize: CGFloat = 15
     static let cornerRadius: CGFloat = 12
@@ -87,7 +88,7 @@ private enum SocialButtonLayout {
 #Preview {
     HStack(spacing: 12) {
         SocialButton(title: "Google", icon: .google) {}
-        SocialButton(title: "Facebook", icon: .facebook) {}
+        SocialButton(title: "Apple", icon: .apple) {}
     }
     .padding()
 }

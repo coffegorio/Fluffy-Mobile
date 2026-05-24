@@ -22,15 +22,16 @@ struct AuthView: View {
 
                 AuthPanel(
                     email: $viewModel.email,
-                    password: $viewModel.password,
-                    onSignIn: viewModel.signInTapped,
-                    onForgotPassword: viewModel.forgotPasswordTapped,
-                    onSignUp: viewModel.signUpTapped,
-                    onGoogleSignIn: viewModel.googleSignInTapped,
-                    onFacebookSignIn: viewModel.facebookSignInTapped
+                    code: $viewModel.code,
+                    step: viewModel.step,
+                    isLoading: viewModel.isLoading,
+                    isPrimaryActionEnabled: viewModel.isPrimaryActionEnabled,
+                    primaryButtonTitle: viewModel.primaryButtonTitle,
+                    errorMessage: viewModel.errorMessage,
+                    onPrimaryAction: viewModel.primaryActionTapped
                 )
             }
-            .ignoresSafeArea(edges: .bottom)
+            .ignoresSafeArea(.container, edges: .bottom)
 
             VStack {
                 CircleIconButton(
@@ -44,6 +45,7 @@ struct AuthView: View {
                 Spacer()
             }
         }
+        .navigationBarBackButtonHidden()
     }
 }
 

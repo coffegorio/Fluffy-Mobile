@@ -51,7 +51,8 @@ struct CapsuleActionButton: View {
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .frame(height: scaledHeight)
-            .background(.accent, in: Capsule())
+            .background(.accent.opacity(0.92), in: Capsule())
+            .fluffyProminentGlass(cornerRadius: scaledHeight / 2, tint: AppTheme.accent.opacity(0.34))
         }
     }
 }

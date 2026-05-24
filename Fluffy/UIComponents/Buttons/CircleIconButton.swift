@@ -21,7 +21,8 @@ struct CircleIconButton: View {
                 .foregroundStyle(.primary)
                 .labelStyle(.iconOnly)
                 .frame(width: CircleIconButtonLayout.size, height: CircleIconButtonLayout.size)
-                .background(.white.opacity(0.92))
+                .background(.white.opacity(0.55))
+                .fluffyGlass(cornerRadius: CircleIconButtonLayout.size / 2, tint: .white.opacity(0.18), isInteractive: true)
                 .clipShape(Circle())
                 .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
 

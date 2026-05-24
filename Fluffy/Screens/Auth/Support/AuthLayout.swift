@@ -20,17 +20,8 @@ enum AuthLayout {
     static let subtitleTopPadding: CGFloat = 6
     static let subtitleBottomPadding: CGFloat = 28
     static let fieldSpacing: CGFloat = 16
-    static let forgotPasswordSize: CGFloat = 14
-    static let forgotPasswordTopPadding: CGFloat = 12
     static let actionsTopPadding: CGFloat = 32
-    static let bottomSectionSpacing: CGFloat = 16
     static let bottomPadding: CGFloat = 32
-    static let signUpRowSpacing: CGFloat = 4
-    static let signUpFontSize: CGFloat = 15
-    static let dividerFontSize: CGFloat = 14
-    static let dividerSpacing: CGFloat = 12
-    static let dividerHeight: CGFloat = 1
-    static let socialButtonSpacing: CGFloat = 12
     static let primaryButtonHeight: CGFloat = 56
     static let primaryButtonFontSize: CGFloat = 17
 }

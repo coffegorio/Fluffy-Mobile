@@ -14,8 +14,9 @@ struct AuthHeader: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("🐾")
-                .font(.system(size: iconSize))
+            Image(systemName: "pawprint.fill")
+                .font(.system(size: iconSize, weight: .bold))
+                .foregroundStyle(.accent)
                 .accessibilityHidden(true)
                 .padding(.top, AuthLayout.iconTopPadding)
                 .padding(.bottom, AuthLayout.iconBottomPadding)

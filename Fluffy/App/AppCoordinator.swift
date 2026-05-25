@@ -112,7 +112,8 @@ private extension AppCoordinator {
         MainViewModel(
             session: currentSession,
             coordinator: self,
-            marketplaceService: dependencies.marketplaceService
+            marketplaceService: dependencies.marketplaceService,
+            mapService: dependencies.mapService
         )
     }
 }

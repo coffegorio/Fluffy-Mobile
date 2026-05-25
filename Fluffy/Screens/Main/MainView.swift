@@ -90,6 +90,8 @@ struct MainView: View {
             SheltersView(viewModel: viewModel)
         case .petSitting:
             PetSittingView(viewModel: viewModel)
+        case .map:
+            MarketplaceMapView(viewModel: viewModel)
         }
     }
 

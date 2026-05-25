@@ -9,10 +9,12 @@ struct AppDependencies {
     let authService: AuthServicing
     let authSessionStore: AuthSessionStoring
     let marketplaceService: MarketplaceServicing
+    let mapService: MapServicing
 
     static let live = AppDependencies(
         authService: MockAuthService(),
         authSessionStore: KeychainAuthSessionStore(),
-        marketplaceService: MockMarketplaceService()
+        marketplaceService: MockMarketplaceService(),
+        mapService: MockMapService()
     )
 }

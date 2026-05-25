@@ -15,8 +15,28 @@ struct ExploreView: View {
         ScrollView {
             VStack(spacing: 14) {
                 VStack(alignment: .leading, spacing: 14) {
-                    Text("explore_title")
-                        .font(.system(size: 24, weight: .heavy))
+                    HStack {
+                        Text("explore_title")
+                            .font(.system(size: 24, weight: .heavy))
+
+                        Spacer()
+
+                        Button {
+                            viewModel.showMap()
+                        } label: {
+                            Label("map_title", systemImage: "map.fill")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundStyle(AppTheme.accent)
+                                .padding(.horizontal, 12)
+                                .frame(height: 36)
+                                .background(AppTheme.surface.opacity(0.62), in: Capsule())
+                                .overlay {
+                                    Capsule()
+                                        .stroke(.white.opacity(0.72), lineWidth: 1)
+                                }
+                        }
+                        .buttonStyle(.plain)
+                    }
 
                     MarketplaceSearchBar(
                         text: $viewModel.searchText,

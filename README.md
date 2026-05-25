@@ -1,0 +1,85 @@
+# Fluffy
+
+Fluffy is a SwiftUI iOS marketplace for pets and animal-related services. The product direction is similar to a classified marketplace, but focused on lost pets, found pets, rehoming, shelters, pet-sitting, boarding, chats, favorites, and profile verification.
+
+The app is currently frontend-first and runs without a real backend. All network-like data is provided by mock services behind protocols, so the UI can be built and tested before backend integration.
+
+## Current Status
+
+- Native SwiftUI app targeting modern iOS.
+- MVVM-style screen state through observable view models.
+- Auth flow with email/code mock logic.
+- Marketplace home, search, favorites, chats, profile, detail pages, shelters, pet-sitting, listing creation sheet.
+- Russian and English localization through `Localizable.xcstrings`.
+- Liquid Glass-inspired visual system.
+- Skeleton loading states for client-server screens.
+- Initial MapKit preparation with mock map markers and a replaceable map service layer.
+
+## Architecture
+
+The app is split into feature and infrastructure layers:
+
+- `Fluffy/App` - app coordinator, routing, dependency composition.
+- `Fluffy/Models` - domain models for marketplace and maps.
+- `Fluffy/Services` - protocols and mock implementations for auth, marketplace, map data, and session storage.
+- `Fluffy/Screens` - SwiftUI screens grouped by feature.
+- `Fluffy/UIComponents` - shared UI controls and marketplace components.
+- `Fluffy/Support` - theme and visual style helpers.
+
+The dependency entry point is `AppDependencies`. Backend work should replace mock services with API-backed implementations while keeping screen code mostly unchanged.
+
+## Maps
+
+Maps are prepared with MapKit and a protocol boundary:
+
+- `MapMarker` describes a map item independent from Apple/Google/Yandex/OSM provider-specific IDs.
+- `MapViewport` describes the visible map area requested by the client.
+- `MapServicing` is the service protocol.
+- `MockMapService` provides local marker data for development.
+- `MarketplaceMapView` renders map markers and filters.
+
+The first provider is Apple MapKit because it is native, cheap for an iOS MVP, and works well with SwiftUI. If we later need better Russian address/POI quality, the service boundary lets us move to Yandex, 2GIS, Google, or MapLibre without rewriting the whole app.
+
+## Running
+
+1. Open `Fluffy.xcodeproj` in Xcode.
+2. Select the `Fluffy` scheme.
+3. Run on an iOS simulator.
+
+Useful launch arguments for UI development:
+
+- `-AppleLanguages (ru)`
+- `-AppleLocale ru_RU`
+- `-ResetAuthSession`
+- `-UITestAuthenticated`
+- `-UITestPreloadMarketplaceData`
+- `-MockMarketplaceLatencyMS 0`
+- `-UITestInitialRoute map`
+- `-UITestInitialRoute listingDetail:1`
+
+## Backend Overview
+
+The backend must own all trusted state. The app can display verification, marker, listing, and permission states, but it must never be the source of truth for access control.
+
+Main backend responsibilities:
+
+- Email/code auth and token refresh.
+- User profile and verification status.
+- Listings with moderation status and geolocation.
+- Map markers by viewport, filters, and clustering.
+- Favorites.
+- Chats and messages.
+- Shelters and pet-sitters.
+- Media upload and image delivery.
+- Abuse reports, moderation, and blocking.
+
+Detailed backend requirements are in [BACKEND_REQUIREMENTS.md](BACKEND_REQUIREMENTS.md).
+
+## Notes For Future Backend Integration
+
+- Keep API DTOs separate from UI models.
+- Store coordinates as neutral latitude/longitude, not provider-specific map objects.
+- Use backend-side verification for restricted actions.
+- Use backend-side spatial queries for map markers.
+- Consider coarse location display for sensitive lost/found listings.
+- Keep mock services available for previews, offline UI testing, and screenshot generation.

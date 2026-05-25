@@ -42,6 +42,7 @@ enum MarketplaceRoute: Hashable {
     case conversation(String)
     case shelters
     case petSitting
+    case map
 }
 
 enum MarketplaceSheet: Identifiable, Hashable {
@@ -82,6 +83,8 @@ final class MainViewModel {
     var petSitters: [PetSitter] = []
     var conversations: [Conversation] = []
     var profile: UserProfile?
+    var mapMarkers: [MapMarker] = []
+    var selectedMapFilters: Set<MapMarkerKind> = Set(MapMarkerKind.allCases)
     var favoriteListingIDs: Set<String> = ["1", "3"]
     var searchText = ""
     var selectedCategory: ListingCategory = .all
@@ -93,15 +96,18 @@ final class MainViewModel {
     private var session: AuthSession?
     private weak var coordinator: MainCoordinating?
     private let marketplaceService: MarketplaceServicing
+    private let mapService: MapServicing
 
     init(
         session: AuthSession?,
         coordinator: MainCoordinating?,
-        marketplaceService: MarketplaceServicing
+        marketplaceService: MarketplaceServicing,
+        mapService: MapServicing
     ) {
         self.session = session
         self.coordinator = coordinator
         self.marketplaceService = marketplaceService
+        self.mapService = mapService
 
         #if DEBUG
         if let rawTab = ProcessInfo.processInfo.value(after: "-UITestInitialTab"),
@@ -118,6 +124,8 @@ final class MainViewModel {
                     path = [.shelters]
                 case "petSitting":
                     path = [.petSitting]
+                case "map":
+                    path = [.map]
                 default:
                     break
                 }
@@ -130,6 +138,7 @@ final class MainViewModel {
             petSitters = MockMarketplaceData.petSitters
             conversations = MockMarketplaceData.conversations
             profile = MockMarketplaceData.profile
+            mapMarkers = []
         }
         #endif
     }
@@ -191,6 +200,7 @@ final class MainViewModel {
             async let petSitters = marketplaceService.fetchPetSitters()
             async let conversations = marketplaceService.fetchConversations()
             async let profile = marketplaceService.fetchUserProfile()
+            async let mapMarkers = mapService.fetchMarkers(in: .moscow, filters: selectedMapFilters)
 
             let page = try await listingsPage
             self.listings = page.items
@@ -199,6 +209,7 @@ final class MainViewModel {
             self.petSitters = try await petSitters
             self.conversations = try await conversations
             self.profile = try await profile
+            self.mapMarkers = try await mapMarkers
             isLoading = false
 
         } catch {
@@ -251,6 +262,43 @@ final class MainViewModel {
 
     func showPetSitting() {
         path.append(.petSitting)
+    }
+
+    func showMap() {
+        path.append(.map)
+    }
+
+    func loadMapMarkers(in viewport: MapViewport? = nil) async {
+        let targetViewport = viewport ?? .moscow
+
+        do {
+            mapMarkers = try await mapService.fetchMarkers(in: targetViewport, filters: selectedMapFilters)
+        } catch {
+            errorMessage = String(localized: "marketplace_load_error")
+        }
+    }
+
+    func toggleMapFilter(_ filter: MapMarkerKind) {
+        if selectedMapFilters.contains(filter) {
+            selectedMapFilters.remove(filter)
+        } else {
+            selectedMapFilters.insert(filter)
+        }
+
+        Task {
+            await loadMapMarkers()
+        }
+    }
+
+    func showMapMarker(_ marker: MapMarker) {
+        switch marker.target {
+        case let .listing(id):
+            path.append(.listingDetail(id))
+        case .shelters:
+            path.append(.shelters)
+        case .petSitting:
+            path.append(.petSitting)
+        }
     }
 
     func showConversation(_ conversation: Conversation) {

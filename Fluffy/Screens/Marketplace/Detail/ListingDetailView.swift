@@ -28,6 +28,7 @@ struct ListingDetailView: View {
         ZStack(alignment: .top) {
             RemoteImageView(url: listing.imageURL)
                 .frame(height: 330)
+                .clipped()
                 .overlay(alignment: .bottomLeading) {
                     if listing.isUrgent {
                         UrgentPillView()
@@ -95,6 +96,8 @@ struct ListingDetailView: View {
             messageButton
         }
         .padding(16)
+        .padding(.top, 4)
+        .background(AppTheme.background)
     }
 
     private var infoGrid: some View {

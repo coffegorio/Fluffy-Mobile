@@ -85,68 +85,6 @@ struct AddListingSheet: View {
     }
 }
 
-struct ProfileCompletionSheet: View {
-    let profile: UserProfile?
-    let isSaving: Bool
-    let onSubmit: (UserProfileDraft) async -> Void
-
-    @State private var draft: UserProfileDraft
-
-    init(
-        profile: UserProfile?,
-        isSaving: Bool,
-        onSubmit: @escaping (UserProfileDraft) async -> Void
-    ) {
-        self.profile = profile
-        self.isSaving = isSaving
-        self.onSubmit = onSubmit
-        _draft = State(
-            initialValue: profile?.draft ?? UserProfileDraft(name: "", handle: "", city: "", phone: "")
-        )
-    }
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    Text("profile_completion_subtitle")
-                        .font(.system(size: 14))
-                        .foregroundStyle(AppTheme.secondaryText)
-                }
-
-                Section("profile_completion_section") {
-                    TextField("profile_form_name", text: $draft.name)
-                    TextField("profile_form_handle", text: $draft.handle)
-                        .textInputAutocapitalization(.never)
-                    TextField("profile_form_city", text: $draft.city)
-                    TextField("profile_form_phone", text: $draft.phone)
-                        .keyboardType(.phonePad)
-                }
-            }
-            .navigationTitle("profile_completion_title")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button {
-                        Task {
-                            await onSubmit(draft)
-                        }
-                    } label: {
-                        if isSaving {
-                            ProgressView()
-                        } else {
-                            Text("common_save")
-                        }
-                    }
-                    .disabled(!draft.isValid || isSaving)
-                }
-            }
-        }
-        .interactiveDismissDisabled()
-        .presentationDetents([.medium, .large])
-    }
-}
-
 struct MarketplaceStatusSheet: View {
     let title: LocalizedStringKey
     let message: LocalizedStringKey

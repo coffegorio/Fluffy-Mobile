@@ -26,8 +26,16 @@ struct CategoryPickerView: View {
                         .foregroundStyle(activeCategory == category ? .white : AppTheme.secondaryText)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(activeCategory == category ? category.tint : AppTheme.muted, in: Capsule())
-                        .fluffyGlass(cornerRadius: 18, tint: category.tint.opacity(activeCategory == category ? 0.28 : 0.08), isInteractive: true)
+                        .background(
+                            activeCategory == category
+                                ? category.tint
+                                : AppTheme.surface.opacity(0.56),
+                            in: Capsule()
+                        )
+                        .overlay {
+                            Capsule()
+                                .stroke(.white.opacity(activeCategory == category ? 0.28 : 0.72), lineWidth: 1)
+                        }
                     }
                     .buttonStyle(.plain)
                 }
@@ -36,5 +44,7 @@ struct CategoryPickerView: View {
             .padding(.vertical, 2)
         }
         .scrollIndicators(.hidden)
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
     }
 }

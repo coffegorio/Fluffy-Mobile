@@ -26,6 +26,9 @@ struct ProfileView: View {
                     MarketplaceErrorStateView(message: errorMessage, retry: viewModel.refresh)
                 } else if let profile = viewModel.profile {
                     profileHeader(profile)
+                    if viewModel.isVerificationRequired {
+                        verificationNotice
+                    }
                     stats(profile)
                     myListings
                     menu
@@ -76,6 +79,33 @@ struct ProfileView: View {
 
             Spacer()
         }
+    }
+
+    private var verificationNotice: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "shield.lefthalf.filled")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(AppTheme.accent)
+                .frame(width: 38, height: 38)
+                .background(AppTheme.accentSoft, in: Circle())
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text("profile_verification_title")
+                    .font(.system(size: 15, weight: .heavy))
+                    .foregroundStyle(AppTheme.text)
+
+                Text("profile_verification_message")
+                    .font(.system(size: 13))
+                    .foregroundStyle(AppTheme.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .background(AppTheme.surface.opacity(0.72), in: RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+        .fluffyGlass(cornerRadius: AppTheme.cardRadius, tint: .white.opacity(0.12))
+        .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
     }
 
     private func stats(_ profile: UserProfile) -> some View {

@@ -46,14 +46,12 @@ enum MarketplaceRoute: Hashable {
 
 enum MarketplaceSheet: Identifiable, Hashable {
     case addListing
-    case completeProfile
     case status(title: String, message: String)
     case profileAction(ProfileMenuAction)
 
     var id: String {
         switch self {
         case .addListing: "addListing"
-        case .completeProfile: "completeProfile"
         case let .status(title, message): "status-\(title)-\(message)"
         case let .profileAction(action): "profileAction-\(action.rawValue)"
         }
@@ -112,13 +110,17 @@ final class MainViewModel {
         }
 
         if let rawRoute = ProcessInfo.processInfo.value(after: "-UITestInitialRoute") {
-            switch rawRoute {
-            case "shelters":
-                path = [.shelters]
-            case "petSitting":
-                path = [.petSitting]
-            default:
-                break
+            if let listingID = rawRoute.removingPrefix("listingDetail:") {
+                path = [.listingDetail(listingID)]
+            } else {
+                switch rawRoute {
+                case "shelters":
+                    path = [.shelters]
+                case "petSitting":
+                    path = [.petSitting]
+                default:
+                    break
+                }
             }
         }
 
@@ -165,7 +167,7 @@ final class MainViewModel {
         Array(listings.prefix(2))
     }
 
-    var shouldPromptForProfileCompletion: Bool {
+    var isVerificationRequired: Bool {
         session?.requiresProfileCompletion == true
     }
 
@@ -199,9 +201,6 @@ final class MainViewModel {
             self.profile = try await profile
             isLoading = false
 
-            if shouldPromptForProfileCompletion {
-                activeSheet = .completeProfile
-            }
         } catch {
             isLoading = false
             errorMessage = String(localized: "marketplace_load_error")
@@ -332,19 +331,6 @@ final class MainViewModel {
         }
     }
 
-    func completeProfile(with draft: UserProfileDraft) async {
-        guard draft.isValid else { return }
-
-        await performAction {
-            profile = try await marketplaceService.updateUserProfile(draft)
-            session?.requiresProfileCompletion = false
-            if let session {
-                coordinator?.updateSession(session)
-            }
-            activeSheet = nil
-        }
-    }
-
     func requestHelp(for shelter: Shelter) {
         Task {
             await performAction {
@@ -412,6 +398,13 @@ private extension ProcessInfo {
         let valueIndex = arguments.index(after: index)
         guard arguments.indices.contains(valueIndex) else { return nil }
         return arguments[valueIndex]
+    }
+}
+
+private extension String {
+    func removingPrefix(_ prefix: String) -> String? {
+        guard hasPrefix(prefix) else { return nil }
+        return String(dropFirst(prefix.count))
     }
 }
 #endif

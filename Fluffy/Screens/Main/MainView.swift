@@ -116,13 +116,6 @@ struct MainView: View {
             AddListingSheet(isSaving: viewModel.isPerformingAction) { draft in
                 await viewModel.createListing(from: draft)
             }
-        case .completeProfile:
-            ProfileCompletionSheet(
-                profile: viewModel.shouldPromptForProfileCompletion ? nil : viewModel.profile,
-                isSaving: viewModel.isPerformingAction
-            ) { draft in
-                await viewModel.completeProfile(with: draft)
-            }
         case let .status(title, message):
             MarketplaceStatusSheet(title: LocalizedStringKey(title), message: LocalizedStringKey(message))
         case let .profileAction(action):

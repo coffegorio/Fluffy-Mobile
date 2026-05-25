@@ -40,8 +40,25 @@
     "%lld ₽" : {
 
     },
-    "%lld ₽ " : {
-
+    "%lld ₽ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld ₽ %2$@"
+          }
+        }
+      }
+    },
+    "%lld ₽%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld ₽%2$@"
+          }
+        }
+      }
     },
     "add_listing" : {
       "extractionState" : "manual",
@@ -1217,6 +1234,7 @@
       }
     },
     "Fluffy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ru" : {
           "stringUnit" : {
@@ -2126,6 +2144,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Выйти"
+          }
+        }
+      }
+    },
+    "profile_verification_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To become a full-access user, complete verification. Access will be confirmed by the backend."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чтобы стать пользователем с полным доступом, необходимо пройти верификацию. Доступ будет подтверждаться бэкендом."
+          }
+        }
+      }
+    },
+    "profile_verification_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verification required"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нужна верификация"
           }
         }
       }

@@ -8,7 +8,7 @@ The app is currently frontend-first and runs without a real backend. All network
 
 - Native SwiftUI app targeting modern iOS.
 - MVVM-style screen state through observable view models.
-- Auth flow with email/code mock logic.
+- Auth flow with email/code backend integration, token storage in Keychain, and mock fallback for UI tests.
 - Marketplace home, search, favorites, chats, profile, detail pages, shelters, pet-sitting, listing creation sheet.
 - Russian and English localization through `Localizable.xcstrings`.
 - Liquid Glass-inspired visual system.
@@ -51,6 +51,8 @@ Useful launch arguments for UI development:
 - `-AppleLanguages (ru)`
 - `-AppleLocale ru_RU`
 - `-ResetAuthSession`
+- `-APIBaseURL http://127.0.0.1:8080`
+- `-UseMockAuth`
 - `-UITestAuthenticated`
 - `-UITestPreloadMarketplaceData`
 - `-MockMarketplaceLatencyMS 0`
@@ -74,6 +76,17 @@ Main backend responsibilities:
 - Abuse reports, moderation, and blocking.
 
 Detailed backend requirements are in [BACKEND_REQUIREMENTS.md](BACKEND_REQUIREMENTS.md).
+
+## Backend Integration
+
+`AppDependencies.live` uses `APIAuthService` by default. The service calls:
+
+- `POST /api/v1/auth/email/start`
+- `POST /api/v1/auth/email/verify`
+- `POST /api/v1/auth/refresh`
+- `POST /api/v1/auth/logout`
+
+The default API base URL is `http://127.0.0.1:8080`, which works with the iOS simulator when the Vapor backend runs on the same Mac. Override it with `-APIBaseURL` or the `FLUFFY_API_BASE_URL` environment variable. UI tests continue to use `MockAuthService` through existing `-UITestAuthEmail` launch arguments.
 
 ## Notes For Future Backend Integration
 

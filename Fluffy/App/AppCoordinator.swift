@@ -27,7 +27,11 @@ final class AppCoordinator {
         if ProcessInfo.processInfo.arguments.contains("-UITestAuthenticated") {
             currentSession = AuthSession(
                 accessToken: "ui-test-token",
+                refreshToken: "ui-test-refresh-token",
+                expiresAt: Date().addingTimeInterval(15 * 60),
                 user: AuthUser(id: "tester@example.com", email: "tester@example.com"),
+                role: .verifiedUser,
+                verificationStatus: .approved,
                 requiresProfileCompletion: false
             )
             root = .home
@@ -89,10 +93,17 @@ extension AppCoordinator: MainCoordinating {
     }
 
     func signOut() {
+        let session = currentSession
         dependencies.authSessionStore.clearSession()
         currentSession = nil
         path = []
         root = .welcome
+
+        if let session {
+            Task {
+                try? await dependencies.authService.logout(session: session, allDevices: false)
+            }
+        }
     }
 }
 

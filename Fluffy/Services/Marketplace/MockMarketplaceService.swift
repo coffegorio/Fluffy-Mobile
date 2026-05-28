@@ -125,6 +125,16 @@ struct MockMarketplaceService: MarketplaceServicing {
         )
     }
 
+    func requestProfileVerification(message: String?) async throws -> ProfileVerificationResponse {
+        try await simulateLatency()
+        return ProfileVerificationResponse(status: .pending, latestRequestId: "mock-verification", updatedAt: Date())
+    }
+
+    func fetchProfileVerificationStatus() async throws -> ProfileVerificationResponse {
+        try await simulateLatency()
+        return ProfileVerificationResponse(status: .approved, latestRequestId: "mock-verification", updatedAt: Date())
+    }
+
     func requestShelterHelp(_ request: ShelterHelpRequest) async throws {
         try await simulateLatency()
     }

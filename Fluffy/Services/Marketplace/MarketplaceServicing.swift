@@ -14,6 +14,8 @@ protocol MarketplaceServicing {
     func createConversation(for listingID: String) async throws -> Conversation
     func sendMessage(_ text: String, in conversationID: String) async throws -> ChatMessage
     func updateUserProfile(_ draft: UserProfileDraft) async throws -> UserProfile
+    func requestProfileVerification(message: String?) async throws -> ProfileVerificationResponse
+    func fetchProfileVerificationStatus() async throws -> ProfileVerificationResponse
     func requestShelterHelp(_ request: ShelterHelpRequest) async throws
     func contactPetSitter(_ request: PetSitterContactRequest) async throws -> Conversation
 }

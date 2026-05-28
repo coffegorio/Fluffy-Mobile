@@ -26,11 +26,24 @@ struct AppDependencies {
         }
         #endif
 
+        let apiClient = APIClient(configuration: .live)
+        let authService = APIAuthService(client: apiClient)
+        let sessionStore = KeychainAuthSessionStore()
+        let authenticatedClient = AuthenticatedAPIClient(
+            client: apiClient,
+            sessionStore: sessionStore,
+            authService: authService
+        )
+
         return AppDependencies(
-            authService: APIAuthService(),
-            authSessionStore: KeychainAuthSessionStore(),
-            marketplaceService: MockMarketplaceService(),
-            mapService: MockMapService()
+            authService: authService,
+            authSessionStore: sessionStore,
+            marketplaceService: APIMarketplaceService(
+                client: apiClient,
+                authenticatedClient: authenticatedClient,
+                sessionStore: sessionStore
+            ),
+            mapService: APIMapService(client: apiClient)
         )
     }
 }

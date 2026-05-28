@@ -83,6 +83,7 @@ final class MainViewModel {
     var petSitters: [PetSitter] = []
     var conversations: [Conversation] = []
     var profile: UserProfile?
+    var profileVerification: ProfileVerificationResponse?
     var mapMarkers: [MapMarker] = []
     var selectedMapFilters: Set<MapMarkerKind> = Set(MapMarkerKind.allCases)
     var favoriteListingIDs: Set<String> = ["1", "3"]
@@ -200,15 +201,18 @@ final class MainViewModel {
             async let petSitters = marketplaceService.fetchPetSitters()
             async let conversations = marketplaceService.fetchConversations()
             async let profile = marketplaceService.fetchUserProfile()
+            async let profileVerification = marketplaceService.fetchProfileVerificationStatus()
             async let mapMarkers = mapService.fetchMarkers(in: .moscow, filters: selectedMapFilters)
 
             let page = try await listingsPage
             self.listings = page.items
+            favoriteListingIDs = Set(page.items.filter(\.isFavorite).map(\.id))
             hasMoreListings = page.hasMore
             self.shelters = try await shelters
             self.petSitters = try await petSitters
             self.conversations = try await conversations
             self.profile = try await profile
+            self.profileVerification = try await profileVerification
             self.mapMarkers = try await mapMarkers
             isLoading = false
 
@@ -413,6 +417,12 @@ final class MainViewModel {
 
     func showProfileAction(_ action: ProfileMenuAction) {
         activeSheet = .profileAction(action)
+    }
+
+    func requestProfileVerification(message: String? = nil) async {
+        await performAction {
+            profileVerification = try await marketplaceService.requestProfileVerification(message: message)
+        }
     }
 
     func showCallPlaceholder() {

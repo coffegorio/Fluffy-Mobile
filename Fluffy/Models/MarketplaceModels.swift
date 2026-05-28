@@ -59,6 +59,12 @@ struct UserProfileDraft: Hashable {
     }
 }
 
+struct ProfileVerificationResponse: Hashable {
+    let status: VerificationStatus
+    let latestRequestId: String?
+    let updatedAt: Date?
+}
+
 struct ShelterHelpRequest: Hashable {
     let shelterID: String
     let message: String
@@ -185,6 +191,7 @@ struct Listing: Identifiable, Hashable {
     let tags: [String]
     let isUrgent: Bool
     let pricePerDay: Int?
+    var isFavorite: Bool = false
 
     var city: String {
         location.components(separatedBy: ",").first ?? location

@@ -21,6 +21,15 @@ struct APIClient {
         return decoder
     }()
 
+    func get<ResponseBody: Decodable>(
+        _ path: String,
+        queryItems: [URLQueryItem] = [],
+        accessToken: String? = nil
+    ) async throws -> ResponseBody {
+        let request = try makeRequest(path: path, method: "GET", queryItems: queryItems, accessToken: accessToken)
+        return try await send(request)
+    }
+
     func post<RequestBody: Encodable, ResponseBody: Decodable>(
         _ path: String,
         body: RequestBody,
@@ -28,6 +37,24 @@ struct APIClient {
     ) async throws -> ResponseBody {
         var request = try makeRequest(path: path, method: "POST", accessToken: accessToken)
         request.httpBody = try encoder.encode(body)
+        return try await send(request)
+    }
+
+    func patch<RequestBody: Encodable, ResponseBody: Decodable>(
+        _ path: String,
+        body: RequestBody,
+        accessToken: String? = nil
+    ) async throws -> ResponseBody {
+        var request = try makeRequest(path: path, method: "PATCH", accessToken: accessToken)
+        request.httpBody = try encoder.encode(body)
+        return try await send(request)
+    }
+
+    func delete<ResponseBody: Decodable>(
+        _ path: String,
+        accessToken: String? = nil
+    ) async throws -> ResponseBody {
+        let request = try makeRequest(path: path, method: "DELETE", accessToken: accessToken)
         return try await send(request)
     }
 
@@ -41,8 +68,23 @@ struct APIClient {
         _ = try await sendEmpty(request)
     }
 
-    private func makeRequest(path: String, method: String, accessToken: String?) throws -> URLRequest {
-        guard let url = URL(string: path, relativeTo: configuration.baseURL) else {
+    private func makeRequest(
+        path: String,
+        method: String,
+        queryItems: [URLQueryItem] = [],
+        accessToken: String?
+    ) throws -> URLRequest {
+        guard let baseURL = URL(string: path, relativeTo: configuration.baseURL),
+              var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)
+        else {
+            throw APIClientError.invalidURL
+        }
+
+        if !queryItems.isEmpty {
+            components.queryItems = queryItems
+        }
+
+        guard let url = components.url else {
             throw APIClientError.invalidURL
         }
 

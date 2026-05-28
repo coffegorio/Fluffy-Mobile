@@ -8,6 +8,7 @@
 enum AppRoot {
     case welcome
     case auth
+    case profileCompletion
     case home
 }
 

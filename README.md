@@ -79,7 +79,9 @@ Detailed backend requirements are in [BACKEND_REQUIREMENTS.md](BACKEND_REQUIREME
 
 ## Backend Integration
 
-`AppDependencies.live` uses `APIAuthService` by default. The service calls:
+`AppDependencies.live` uses API-backed services by default. Mock marketplace data is kept only for previews and explicit UI-test launch arguments; the production app does not fall back to sample listings, shelters, or pet-sitters.
+
+The auth service calls:
 
 - `POST /api/v1/auth/email/start`
 - `POST /api/v1/auth/email/verify`
@@ -87,6 +89,17 @@ Detailed backend requirements are in [BACKEND_REQUIREMENTS.md](BACKEND_REQUIREME
 - `POST /api/v1/auth/logout`
 
 The default API base URL is `http://127.0.0.1:8080`, which works with the iOS simulator when the Vapor backend runs on the same Mac. Override it with `-APIBaseURL` or the `FLUFFY_API_BASE_URL` environment variable. UI tests continue to use `MockAuthService` through existing `-UITestAuthEmail` launch arguments.
+
+Marketplace screens call real backend endpoints:
+
+- `GET /api/v1/listings`
+- `GET /api/v1/favorites`
+- `GET /api/v1/shelters`
+- `GET /api/v1/pet-sitters`
+- `GET /api/v1/map/markers`
+- `GET /api/v1/chats`
+
+When those endpoints return empty arrays, the app shows localized empty states instead of mock content.
 
 ## Notes For Future Backend Integration
 

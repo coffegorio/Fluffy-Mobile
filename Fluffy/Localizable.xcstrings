@@ -106,7 +106,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Введите код из письма. Если вы впервые во Fluffy, после входа мы попросим заполнить анкету."
+            "value" : "Введите код из письма. Если вы впервые во Флаффи, после входа мы попросим заполнить анкету."
           }
         }
       }
@@ -395,7 +395,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Войти во Fluffy"
+            "value" : "Войти во Флаффи"
           }
         }
       }
@@ -440,13 +440,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Calls are not connected yet"
+            "value" : "Calls are unavailable"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Звонки пока не подключены"
+            "value" : "Звонки недоступны"
           }
         }
       }
@@ -701,7 +701,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Пользователь Fluffy"
+            "value" : "Пользователь Флаффи"
           }
         }
       }
@@ -729,13 +729,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No messages yet"
+            "value" : "No messages"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Сообщений пока нет"
+            "value" : "Нет сообщений"
           }
         }
       }
@@ -1315,6 +1315,40 @@
         }
       }
     },
+    "home_empty_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listings from Lipetsk will appear here after publication. You can add the first one."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Здесь появятся объявления из Липецка после публикации. Можно добавить первое."
+          }
+        }
+      }
+    },
+    "home_empty_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No listings"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет объявлений"
+          }
+        }
+      }
+    },
     "home_search_placeholder" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1355,13 +1389,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shelters in Moscow and Saint Petersburg"
+            "value" : "Shelters in Lipetsk"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Приюты в Москве и Санкт-Петербурге"
+            "value" : "Приюты в Липецке"
           }
         }
       }
@@ -1406,13 +1440,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "It is already visible in your local feed. The backend can later replace this with real publishing."
+            "value" : "It is visible in your local feed."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Оно уже появилось в локальной ленте. Позже бэкенд заменит это реальной публикацией."
+            "value" : "Оно появилось в локальной ленте."
           }
         }
       }
@@ -1740,6 +1774,40 @@
         }
       }
     },
+    "map_empty_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Markers will appear when listings, shelters or pet sitters are published in Lipetsk."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Метки появятся после публикации объявлений, приютов или pet-sitter-ов в Липецке."
+          }
+        }
+      }
+    },
+    "map_empty_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No map markers"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет меток на карте"
+          }
+        }
+      }
+    },
     "marketplace_action_error" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1871,7 +1939,41 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Проверенные pet-sitter-ы позаботятся о питомце, пока вас нет дома."
+            "value" : "Проверенные pet-sitter-ы позаботятся о питомце на время вашего отъезда."
+          }
+        }
+      }
+    },
+    "petsitting_empty_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verified pet sitters will appear here after moderation."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверенные pet-sitter-ы появятся здесь после модерации."
+          }
+        }
+      }
+    },
+    "petsitting_empty_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pet sitters"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет pet-sitter-ов"
           }
         }
       }
@@ -1922,7 +2024,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fluffy готов к послойному подключению API."
+            "value" : "Флаффи готов к послойному подключению API."
           }
         }
       }
@@ -2024,7 +2126,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Нужно несколько деталей, чтобы вы могли полноценно пользоваться Fluffy."
+            "value" : "Нужно несколько деталей, чтобы вы могли полноценно пользоваться Флаффи."
           }
         }
       }
@@ -2110,6 +2212,176 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Телефон"
+          }
+        }
+      }
+    },
+    "profile_completion_city_placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lipetsk"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Липецк"
+          }
+        }
+      }
+    },
+    "profile_completion_country" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Country"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Страна"
+          }
+        }
+      }
+    },
+    "profile_completion_country_locked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fixed"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрано"
+          }
+        }
+      }
+    },
+    "profile_completion_name_placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your name"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваше имя"
+          }
+        }
+      }
+    },
+    "profile_completion_phone_error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a Russian phone number, for example +7 900 123-45-67."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите российский номер, например +7 900 123-45-67."
+          }
+        }
+      }
+    },
+    "profile_completion_photo_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional. A profile photo helps other pet owners trust you faster."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Необязательно. Живое фото помогает другим владельцам быстрее доверять вам."
+          }
+        }
+      }
+    },
+    "profile_completion_photo_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile photo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фото профиля"
+          }
+        }
+      }
+    },
+    "profile_completion_save_button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue to Fluffy"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Продолжить во Флаффи"
+          }
+        }
+      }
+    },
+    "profile_completion_save_error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not save the profile. Check the connection and try again."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось сохранить профиль. Проверьте соединение и попробуйте еще раз."
+          }
+        }
+      }
+    },
+    "profile_completion_sign_out" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign out"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выйти из аккаунта"
           }
         }
       }
@@ -2460,13 +2732,47 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "3 shelters in Moscow and Saint Petersburg"
+            "value" : "Verified shelters from the backend"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "3 приюта в Москве и Санкт-Петербурге"
+            "value" : "Проверенные приюты из backend"
+          }
+        }
+      }
+    },
+    "shelters_empty_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shelters will appear here after review."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приюты появятся здесь после проверки."
+          }
+        }
+      }
+    },
+    "shelters_empty_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No shelters"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет приютов"
           }
         }
       }
@@ -2623,9 +2929,6 @@
           }
         }
       }
-    },
-    "Москва" : {
-
     }
   },
   "version" : "1.0"

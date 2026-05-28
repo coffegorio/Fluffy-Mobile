@@ -14,11 +14,11 @@ struct MapViewport: Hashable {
     let southWestLongitude: Double
     let zoom: Double
 
-    static let moscow = MapViewport(
-        northEastLatitude: 55.95,
-        northEastLongitude: 37.95,
-        southWestLatitude: 55.55,
-        southWestLongitude: 37.25,
+    static let lipetsk = MapViewport(
+        northEastLatitude: 52.72,
+        northEastLongitude: 39.78,
+        southWestLatitude: 52.48,
+        southWestLongitude: 39.36,
         zoom: 11
     )
 }

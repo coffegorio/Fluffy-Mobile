@@ -15,7 +15,7 @@ struct ContentView: View {
         @Bindable var coordinator = coordinator
 
         switch coordinator.root {
-        case .home:
+        case .home, .profileCompletion:
             coordinator.rootView()
         case .welcome, .auth:
             NavigationStack(path: $coordinator.path) {

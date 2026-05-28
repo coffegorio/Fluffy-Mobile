@@ -15,6 +15,7 @@ struct LabeledTextField: View {
     let icon: String
     var isSecure: Bool = false
     var keyboardType: UIKeyboardType = .emailAddress
+    var textInputAutocapitalization: TextInputAutocapitalization = .never
     var accessibilityIdentifier: String?
 
     @Binding var text: String
@@ -39,7 +40,7 @@ struct LabeledTextField: View {
                     TextField(placeholder, text: $text)
                         .font(.system(size: LabeledTextFieldLayout.inputSize))
                         .keyboardType(keyboardType)
-                        .textInputAutocapitalization(.never)
+                        .textInputAutocapitalization(textInputAutocapitalization)
                         .autocorrectionDisabled()
                         .accessibilityLabel(label)
                         .accessibilityIdentifier(accessibilityIdentifier ?? label)

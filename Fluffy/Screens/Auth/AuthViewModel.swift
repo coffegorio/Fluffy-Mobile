@@ -38,7 +38,8 @@ final class AuthViewModel {
         self.authService = authService
 
         #if DEBUG
-        if let email = ProcessInfo.processInfo.value(after: "-UITestAuthEmail") {
+        if let email = ProcessInfo.processInfo.value(after: "-UITestAuthEmail")
+            ?? ProcessInfo.processInfo.value(after: "-PrefillAuthEmail") {
             self.email = email
         }
         #endif

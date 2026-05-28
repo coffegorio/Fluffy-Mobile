@@ -12,6 +12,7 @@ struct AppDependencies {
     let authSessionStore: AuthSessionStoring
     let marketplaceService: MarketplaceServicing
     let mapService: MapServicing
+    let mediaService: MediaServicing
 
     static var live: AppDependencies {
         #if DEBUG
@@ -21,7 +22,8 @@ struct AppDependencies {
                 authService: MockAuthService(),
                 authSessionStore: KeychainAuthSessionStore(),
                 marketplaceService: MockMarketplaceService(),
-                mapService: MockMapService()
+                mapService: MockMapService(),
+                mediaService: MockMediaService()
             )
         }
         #endif
@@ -43,7 +45,8 @@ struct AppDependencies {
                 authenticatedClient: authenticatedClient,
                 sessionStore: sessionStore
             ),
-            mapService: APIMapService(client: apiClient)
+            mapService: APIMapService(client: apiClient),
+            mediaService: APIMediaService(client: apiClient, authenticatedClient: authenticatedClient)
         )
     }
 }

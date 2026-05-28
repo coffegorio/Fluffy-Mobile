@@ -11,8 +11,8 @@ struct MarketplaceMapView: View {
 
     @State private var position = MapCameraPosition.region(
         MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 55.7558, longitude: 37.6173),
-            span: MKCoordinateSpan(latitudeDelta: 0.32, longitudeDelta: 0.44)
+            center: CLLocationCoordinate2D(latitude: 52.6031, longitude: 39.5708),
+            span: MKCoordinateSpan(latitudeDelta: 0.22, longitudeDelta: 0.36)
         )
     )
 
@@ -43,6 +43,19 @@ struct MarketplaceMapView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
+
+            if !viewModel.isLoading && viewModel.mapMarkers.isEmpty {
+                VStack {
+                    Spacer()
+                    MarketplaceEmptyStateView(
+                        title: "map_empty_title",
+                        subtitle: "map_empty_subtitle"
+                    )
+                    .background(AppTheme.surface.opacity(0.74), in: RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 92)
+                }
+            }
         }
         .navigationBarBackButtonHidden()
         .task {

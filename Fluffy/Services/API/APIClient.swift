@@ -68,6 +68,29 @@ struct APIClient {
         _ = try await sendEmpty(request)
     }
 
+    func uploadMultipart<ResponseBody: Decodable>(
+        _ path: String,
+        fields: [String: String],
+        fileFieldName: String,
+        fileName: String,
+        mimeType: String,
+        fileData: Data,
+        accessToken: String? = nil
+    ) async throws -> ResponseBody {
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var request = try makeRequest(path: path, method: "POST", accessToken: accessToken)
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.httpBody = makeMultipartBody(
+            boundary: boundary,
+            fields: fields,
+            fileFieldName: fileFieldName,
+            fileName: fileName,
+            mimeType: mimeType,
+            fileData: fileData
+        )
+        return try await send(request)
+    }
+
     private func makeRequest(
         path: String,
         method: String,
@@ -109,6 +132,32 @@ struct APIClient {
     private func sendEmpty(_ request: URLRequest) async throws {
         let (data, response) = try await urlSession.data(for: request)
         try validate(data: data, response: response)
+    }
+
+    private func makeMultipartBody(
+        boundary: String,
+        fields: [String: String],
+        fileFieldName: String,
+        fileName: String,
+        mimeType: String,
+        fileData: Data
+    ) -> Data {
+        var body = Data()
+        let lineBreak = "\r\n"
+
+        for (name, value) in fields {
+            body.append("--\(boundary)\(lineBreak)")
+            body.append("Content-Disposition: form-data; name=\"\(name)\"\(lineBreak)\(lineBreak)")
+            body.append("\(value)\(lineBreak)")
+        }
+
+        body.append("--\(boundary)\(lineBreak)")
+        body.append("Content-Disposition: form-data; name=\"\(fileFieldName)\"; filename=\"\(fileName)\"\(lineBreak)")
+        body.append("Content-Type: \(mimeType)\(lineBreak)\(lineBreak)")
+        body.append(fileData)
+        body.append(lineBreak)
+        body.append("--\(boundary)--\(lineBreak)")
+        return body
     }
 
     private func validate(data: Data, response: URLResponse) throws {
@@ -153,4 +202,10 @@ private struct APIErrorEnvelope: Decodable {
 private struct APIErrorBody: Decodable {
     let code: String
     let message: String
+}
+
+private extension Data {
+    mutating func append(_ string: String) {
+        append(Data(string.utf8))
+    }
 }

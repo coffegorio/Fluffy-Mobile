@@ -9,18 +9,15 @@ struct APIMarketplaceService: MarketplaceServicing {
     private let client: APIClient
     private let authenticatedClient: AuthenticatedAPIClient
     private let sessionStore: AuthSessionStoring
-    private let fallback: MockMarketplaceService
 
     init(
         client: APIClient,
         authenticatedClient: AuthenticatedAPIClient,
-        sessionStore: AuthSessionStoring,
-        fallback: MockMarketplaceService = MockMarketplaceService()
+        sessionStore: AuthSessionStoring
     ) {
         self.client = client
         self.authenticatedClient = authenticatedClient
         self.sessionStore = sessionStore
-        self.fallback = fallback
     }
 
     func fetchListings(query: ListingQuery) async throws -> MarketplacePage<Listing> {
@@ -56,11 +53,25 @@ struct APIMarketplaceService: MarketplaceServicing {
     }
 
     func fetchShelters() async throws -> [Shelter] {
-        try await fallback.fetchShelters()
+        let page: BackendPage<BackendShelterResponse> = try await client.get(
+            "/api/v1/shelters",
+            queryItems: [
+                URLQueryItem(name: "page", value: "1"),
+                URLQueryItem(name: "pageSize", value: "50")
+            ]
+        )
+        return page.items.map(\.shelter)
     }
 
     func fetchPetSitters() async throws -> [PetSitter] {
-        try await fallback.fetchPetSitters()
+        let page: BackendPage<BackendPetSitterResponse> = try await client.get(
+            "/api/v1/pet-sitters",
+            queryItems: [
+                URLQueryItem(name: "page", value: "1"),
+                URLQueryItem(name: "pageSize", value: "50")
+            ]
+        )
+        return page.items.map(\.petSitter)
     }
 
     func fetchConversations() async throws -> [Conversation] {
@@ -68,13 +79,13 @@ struct APIMarketplaceService: MarketplaceServicing {
         let chats: [BackendChatResponse] = try await client.get("/api/v1/chats", accessToken: accessToken)
         var conversations: [Conversation] = []
         for chat in chats {
-            let messages: [BackendChatMessageResponse] = try await client.get(
+            let messagesPage: BackendPage<BackendChatMessageResponse> = try await client.get(
                 "/api/v1/chats/\(chat.id)/messages",
                 accessToken: accessToken
             )
             let listing = try await fetchListingIfNeeded(chat.listingId, accessToken: accessToken)
             conversations.append(chat.conversation(
-                messages: messages,
+                messages: messagesPage.items,
                 listing: listing,
                 currentUserID: sessionStore.loadSession()?.user.id
             ))
@@ -116,12 +127,12 @@ struct APIMarketplaceService: MarketplaceServicing {
             initialMessage: String(localized: "chat_new_conversation_message")
         )
         let chat: BackendChatResponse = try await client.post("/api/v1/chats", body: request, accessToken: accessToken)
-        let messages: [BackendChatMessageResponse] = try await client.get(
+        let messagesPage: BackendPage<BackendChatMessageResponse> = try await client.get(
             "/api/v1/chats/\(chat.id)/messages",
             accessToken: accessToken
         )
         let listing = try await fetchListingIfNeeded(chat.listingId, accessToken: accessToken)
-        return chat.conversation(messages: messages, listing: listing, currentUserID: sessionStore.loadSession()?.user.id)
+        return chat.conversation(messages: messagesPage.items, listing: listing, currentUserID: sessionStore.loadSession()?.user.id)
     }
 
     func sendMessage(_ text: String, in conversationID: String) async throws -> ChatMessage {
@@ -147,11 +158,32 @@ struct APIMarketplaceService: MarketplaceServicing {
     }
 
     func requestShelterHelp(_ request: ShelterHelpRequest) async throws {
-        try await fallback.requestShelterHelp(request)
+        let accessToken = try await authenticatedClient.accessToken()
+        let _: EmptyResponse = try await client.post(
+            "/api/v1/shelters/\(request.shelterID)/help",
+            body: DirectoryContactRequest(message: request.message),
+            accessToken: accessToken
+        )
     }
 
     func contactPetSitter(_ request: PetSitterContactRequest) async throws -> Conversation {
-        try await fallback.contactPetSitter(request)
+        let accessToken = try await authenticatedClient.accessToken()
+        let chat: BackendChatResponse = try await client.post(
+            "/api/v1/pet-sitters/\(request.petSitterID)/contact",
+            body: DirectoryContactRequest(message: request.message),
+            accessToken: accessToken
+        )
+        let sitter = try await fetchPetSitter(id: request.petSitterID)
+        let messagesPage: BackendPage<BackendChatMessageResponse> = try await client.get(
+            "/api/v1/chats/\(chat.id)/messages",
+            accessToken: accessToken
+        )
+        return chat.conversation(
+            messages: messagesPage.items,
+            listing: nil,
+            petSitter: sitter,
+            currentUserID: sessionStore.loadSession()?.user.id
+        )
     }
 
     func requestProfileVerification(message: String?) async throws -> ProfileVerificationResponse {
@@ -177,6 +209,17 @@ struct APIMarketplaceService: MarketplaceServicing {
         guard let id else { return nil }
         return try await client.get("/api/v1/listings/\(id)", accessToken: accessToken)
     }
+
+    private func fetchPetSitter(id: String) async throws -> BackendPetSitterResponse? {
+        let page: BackendPage<BackendPetSitterResponse> = try await client.get(
+            "/api/v1/pet-sitters",
+            queryItems: [
+                URLQueryItem(name: "page", value: "1"),
+                URLQueryItem(name: "pageSize", value: "100")
+            ]
+        )
+        return page.items.first { $0.id == id }
+    }
 }
 
 private struct BackendPage<Item: Decodable>: Decodable {
@@ -187,6 +230,14 @@ private struct BackendPage<Item: Decodable>: Decodable {
 }
 
 private struct EmptyBody: Encodable {}
+
+private struct EmptyResponse: Decodable {
+    let ok: Bool
+}
+
+private struct DirectoryContactRequest: Encodable {
+    let message: String?
+}
 
 private struct FavoriteResponse: Decodable {
     let listingId: String
@@ -232,15 +283,18 @@ private struct ListingCreateRequest: Encodable {
 
 private struct ProfileUpdateRequest: Encodable {
     let name: String
-    let handle: String
+    let handle: String?
     let city: String
     let phone: String
+    let avatarUrl: String?
 
     init(draft: UserProfileDraft) {
         self.name = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.handle = draft.handle.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedHandle = draft.handle.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.handle = trimmedHandle.isEmpty ? nil : trimmedHandle
         self.city = draft.city.trimmingCharacters(in: .whitespacesAndNewlines)
         self.phone = draft.phone.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.avatarUrl = draft.avatarURL?.absoluteString
     }
 }
 
@@ -357,29 +411,85 @@ private struct BackendListingAuthorResponse: Decodable {
     let avatarUrl: String?
 }
 
+private struct BackendShelterResponse: Decodable {
+    let id: String
+    let name: String
+    let city: String
+    let imageURL: String?
+    let imageUrl: String?
+    let animals: Int
+    let description: String
+    let phone: String
+    let urgentCount: Int
+
+    var shelter: Shelter {
+        Shelter(
+            id: id,
+            name: name,
+            city: city,
+            imageURL: URL(string: imageURL ?? imageUrl ?? ""),
+            animals: animals,
+            description: description,
+            phone: phone,
+            urgentCount: urgentCount
+        )
+    }
+}
+
+private struct BackendPetSitterResponse: Decodable {
+    let id: String
+    let name: String
+    let avatarURL: String?
+    let avatarUrl: String?
+    let rating: Double
+    let reviews: Int
+    let pricePerDay: Int
+    let location: String
+    let services: [String]
+    let bio: String
+    let animalTypes: [String]
+
+    var petSitter: PetSitter {
+        PetSitter(
+            id: id,
+            name: name,
+            avatarURL: URL(string: avatarURL ?? avatarUrl ?? ""),
+            rating: rating,
+            reviews: reviews,
+            pricePerDay: pricePerDay,
+            location: location,
+            services: services,
+            bio: bio,
+            animalTypes: animalTypes.compactMap { AnimalType(rawValue: $0) }
+        )
+    }
+}
+
 private struct BackendChatResponse: Decodable {
     let id: String
     let listingId: String?
     let participantIds: [String]
     let lastMessage: String?
+    let unreadCount: Int?
     let createdAt: Date?
     let updatedAt: Date?
 
     func conversation(
         messages: [BackendChatMessageResponse],
         listing: BackendListingResponse?,
+        petSitter: BackendPetSitterResponse? = nil,
         currentUserID: String?
     ) -> Conversation {
         let mappedMessages = messages.map { $0.message(currentUserID: currentUserID) }
         let last = mappedMessages.last?.text ?? lastMessage ?? String(localized: "chat_new_conversation_message")
         return Conversation(
             id: id,
-            name: listing?.authorName ?? listing?.author?.name ?? String(localized: "chat_unknown_user"),
-            avatarURL: URL(string: listing?.authorAvatarURL ?? listing?.author?.avatarUrl ?? ""),
+            name: petSitter?.name ?? listing?.authorName ?? listing?.author?.name ?? String(localized: "chat_unknown_user"),
+            avatarURL: petSitter?.petSitter.avatarURL ?? URL(string: listing?.authorAvatarURL ?? listing?.author?.avatarUrl ?? ""),
             lastMessage: last,
             time: listingDate(from: updatedAt ?? createdAt),
-            unreadCount: 0,
-            listingTitle: listing?.title ?? String(localized: "add_listing"),
+            unreadCount: unreadCount ?? 0,
+            listingTitle: listing?.title ?? petSitter?.name ?? String(localized: "add_listing"),
             messages: mappedMessages
         )
     }

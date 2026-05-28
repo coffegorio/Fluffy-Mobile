@@ -52,6 +52,7 @@ struct UserProfileDraft: Hashable {
     var handle: String
     var city: String
     var phone: String
+    var avatarURL: URL?
 
     var isValid: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -259,6 +260,6 @@ struct UserProfile: Hashable {
     let daysOnPlatform: Int
 
     var draft: UserProfileDraft {
-        UserProfileDraft(name: name, handle: handle, city: city, phone: phone)
+        UserProfileDraft(name: name, handle: handle, city: city, phone: phone, avatarURL: avatarURL)
     }
 }

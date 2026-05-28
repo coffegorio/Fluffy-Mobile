@@ -10,7 +10,7 @@ import SwiftUI
 enum AuthLayout {
     static let panelHeight: CGFloat = 760
     static let horizontalPadding: CGFloat = 24
-    static let contentTopPadding: CGFloat = 72
+    static let contentTopPadding: CGFloat = 96
     static let backgroundBackButtonTopPadding: CGFloat = 12
     static let iconSize: CGFloat = 52
     static let iconTopPadding: CGFloat = 24

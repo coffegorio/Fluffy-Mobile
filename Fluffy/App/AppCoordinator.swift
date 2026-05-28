@@ -41,7 +41,7 @@ final class AppCoordinator {
 
         if let session = dependencies.authSessionStore.loadSession() {
             currentSession = session
-            root = .home
+            root = session.requiresProfileCompletion ? .profileCompletion : .home
         }
     }
 
@@ -52,6 +52,12 @@ final class AppCoordinator {
             WelcomeView(viewModel: makeWelcomeViewModel())
         case .auth:
             AuthView(viewModel: makeAuthViewModel())
+        case .profileCompletion:
+            if let currentSession {
+                ProfileCompletionView(viewModel: makeProfileCompletionViewModel(session: currentSession))
+            } else {
+                WelcomeView(viewModel: makeWelcomeViewModel())
+            }
         case .home:
             MainView(viewModel: makeMainViewModel())
         }
@@ -82,7 +88,20 @@ extension AppCoordinator: AuthCoordinating {
         dependencies.authSessionStore.saveSession(session)
         currentSession = session
         path = []
+        root = session.requiresProfileCompletion ? .profileCompletion : .home
+    }
+}
+
+extension AppCoordinator: ProfileCompletionCoordinating {
+    func profileCompletionDidFinish(session: AuthSession) {
+        currentSession = session
+        dependencies.authSessionStore.saveSession(session)
+        path = []
         root = .home
+    }
+
+    func cancelProfileCompletion() {
+        signOut()
     }
 }
 
@@ -125,6 +144,15 @@ private extension AppCoordinator {
             coordinator: self,
             marketplaceService: dependencies.marketplaceService,
             mapService: dependencies.mapService
+        )
+    }
+
+    func makeProfileCompletionViewModel(session: AuthSession) -> ProfileCompletionViewModel {
+        ProfileCompletionViewModel(
+            session: session,
+            coordinator: self,
+            marketplaceService: dependencies.marketplaceService,
+            mediaService: dependencies.mediaService
         )
     }
 }

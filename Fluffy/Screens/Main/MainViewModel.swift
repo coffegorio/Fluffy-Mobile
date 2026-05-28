@@ -86,7 +86,7 @@ final class MainViewModel {
     var profileVerification: ProfileVerificationResponse?
     var mapMarkers: [MapMarker] = []
     var selectedMapFilters: Set<MapMarkerKind> = Set(MapMarkerKind.allCases)
-    var favoriteListingIDs: Set<String> = ["1", "3"]
+    var favoriteListingIDs: Set<String> = []
     var searchText = ""
     var selectedCategory: ListingCategory = .all
     var isLoading = false
@@ -202,23 +202,30 @@ final class MainViewModel {
             async let conversations = marketplaceService.fetchConversations()
             async let profile = marketplaceService.fetchUserProfile()
             async let profileVerification = marketplaceService.fetchProfileVerificationStatus()
-            async let mapMarkers = mapService.fetchMarkers(in: .moscow, filters: selectedMapFilters)
+            async let mapMarkers = mapService.fetchMarkers(in: .lipetsk, filters: selectedMapFilters)
 
             let page = try await listingsPage
             self.listings = page.items
             favoriteListingIDs = Set(page.items.filter(\.isFavorite).map(\.id))
             hasMoreListings = page.hasMore
-            self.shelters = try await shelters
-            self.petSitters = try await petSitters
-            self.conversations = try await conversations
-            self.profile = try await profile
-            self.profileVerification = try await profileVerification
-            self.mapMarkers = try await mapMarkers
+            self.shelters = (try? await shelters) ?? []
+            self.petSitters = (try? await petSitters) ?? []
+            self.conversations = (try? await conversations) ?? []
+            self.profile = try? await profile
+            self.profileVerification = try? await profileVerification
+            self.mapMarkers = (try? await mapMarkers) ?? []
             isLoading = false
 
         } catch {
+            listings = []
+            favoriteListingIDs = []
+            hasMoreListings = false
+            shelters = []
+            petSitters = []
+            conversations = []
+            mapMarkers = []
             isLoading = false
-            errorMessage = String(localized: "marketplace_load_error")
+            errorMessage = nil
         }
     }
 
@@ -273,7 +280,7 @@ final class MainViewModel {
     }
 
     func loadMapMarkers(in viewport: MapViewport? = nil) async {
-        let targetViewport = viewport ?? .moscow
+        let targetViewport = viewport ?? .lipetsk
 
         do {
             mapMarkers = try await mapService.fetchMarkers(in: targetViewport, filters: selectedMapFilters)

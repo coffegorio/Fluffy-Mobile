@@ -38,6 +38,12 @@ struct PetSittingView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 24)
+                } else if viewModel.petSitters.isEmpty {
+                    MarketplaceEmptyStateView(
+                        title: "petsitting_empty_title",
+                        subtitle: "petsitting_empty_subtitle"
+                    )
+                    .padding(.horizontal, 16)
                 } else {
                     LazyVStack(spacing: 12) {
                         ForEach(viewModel.petSitters) { sitter in

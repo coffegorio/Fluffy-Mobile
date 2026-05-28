@@ -26,6 +26,11 @@ struct SheltersView: View {
                             ShelterCardSkeleton()
                         }
                     }
+                } else if viewModel.shelters.isEmpty {
+                    MarketplaceEmptyStateView(
+                        title: "shelters_empty_title",
+                        subtitle: "shelters_empty_subtitle"
+                    )
                 } else {
                     LazyVStack(spacing: 14) {
                         ForEach(viewModel.shelters) { shelter in

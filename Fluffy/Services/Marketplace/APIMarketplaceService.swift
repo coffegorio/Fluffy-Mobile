@@ -275,24 +275,30 @@ private struct ListingCreateRequest: Encodable {
     let isUrgent: Bool
     let pricePerDay: Int?
     let price: Int?
+    let reward: Int?
+    let tags: [String]
+    let photoIds: [String]
     let locationPrecision: String
 
     init(draft: ListingDraft) {
-        let location = draft.location.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.category = draft.category.backendValue
+        let location = draft.normalizedLocation
+        self.category = draft.resolvedCategory.backendValue
         self.title = draft.title.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.description = draft.description.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.description = draft.submissionDescription
         self.animalType = draft.animalType.rawValue
         self.petType = draft.animalType.rawValue
         self.breed = draft.breed.trimmingCharacters(in: .whitespacesAndNewlines)
         self.age = draft.age.trimmingCharacters(in: .whitespacesAndNewlines)
         self.sex = draft.sex.rawValue
         self.gender = draft.sex.rawValue
-        self.city = location.components(separatedBy: ",").first?.trimmingCharacters(in: .whitespacesAndNewlines) ?? location
+        self.city = draft.normalizedCity
         self.location = location
-        self.isUrgent = draft.isUrgent
-        self.pricePerDay = draft.pricePerDay
-        self.price = draft.pricePerDay
+        self.isUrgent = draft.isUrgent || draft.urgencyLevel == .urgent || draft.publicationType == .urgentHelp
+        self.pricePerDay = draft.publicationFormat == .commercial ? draft.pricePerDay : nil
+        self.price = draft.publicationFormat == .commercial ? draft.pricePerDay : nil
+        self.reward = draft.reward
+        self.tags = draft.tags
+        self.photoIds = draft.photoIds
         self.locationPrecision = "city"
     }
 }

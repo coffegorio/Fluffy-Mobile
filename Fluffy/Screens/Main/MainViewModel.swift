@@ -435,7 +435,21 @@ final class MainViewModel {
         guard draft.isValid else { return }
 
         await performAction {
-            let listing = try await marketplaceService.createListing(from: draft)
+            var submission = draft
+            if !draft.photoData.isEmpty {
+                var uploads: [ListingPhotoUpload] = []
+                for data in draft.photoData {
+                    let uuidString = UUID().uuidString
+                    let upload = try await mediaService.uploadListingPhoto(
+                        data: data,
+                        fileName: "\(uuidString).jpg",
+                        mimeType: "image/jpeg"
+                    )
+                    uploads.append(upload)
+                }
+                submission.photoIds = uploads.map(\.mediaId)
+            }
+            let listing = try await marketplaceService.createListing(from: submission)
             favoriteListingIDs.remove(listing.id)
             activeSheet = .status(title: "listing_created_title", message: "listing_created_message")
         }

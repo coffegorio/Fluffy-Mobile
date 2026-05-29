@@ -116,6 +116,9 @@ private extension AuthViewModel {
         do {
             try await action()
             isLoading = false
+        } catch let apiError as APIClientError {
+            isLoading = false
+            errorMessage = apiError.localizedDescription
         } catch {
             isLoading = false
             errorMessage = String(localized: "auth_generic_error")

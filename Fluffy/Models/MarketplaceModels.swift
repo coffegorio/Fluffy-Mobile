@@ -18,12 +18,17 @@ struct ListingQuery: Hashable {
     var searchText: String
     var page: Int
     var pageSize: Int
+    var latitude: Double? = nil
+    var longitude: Double? = nil
+    var radius: Double? = nil
 
     static let firstPage = ListingQuery(
         category: nil,
         searchText: "",
         page: 1,
-        pageSize: 20
+        pageSize: 20,
+        latitude: 52.60,
+        longitude: 39.57
     )
 }
 
@@ -193,9 +198,59 @@ struct Listing: Identifiable, Hashable {
     let isUrgent: Bool
     let pricePerDay: Int?
     var isFavorite: Bool = false
+    let distance: Double?
+
+    init(
+        id: String,
+        category: ListingCategory,
+        title: String,
+        animalType: AnimalType,
+        breed: String,
+        age: String,
+        sex: PetSex,
+        location: String,
+        imageURL: URL?,
+        description: String,
+        authorName: String,
+        authorAvatarURL: URL?,
+        date: String,
+        tags: [String],
+        isUrgent: Bool,
+        pricePerDay: Int?,
+        isFavorite: Bool = false,
+        distance: Double? = nil
+    ) {
+        self.id = id
+        self.category = category
+        self.title = title
+        self.animalType = animalType
+        self.breed = breed
+        self.age = age
+        self.sex = sex
+        self.location = location
+        self.imageURL = imageURL
+        self.description = description
+        self.authorName = authorName
+        self.authorAvatarURL = authorAvatarURL
+        self.date = date
+        self.tags = tags
+        self.isUrgent = isUrgent
+        self.pricePerDay = pricePerDay
+        self.isFavorite = isFavorite
+        self.distance = distance
+    }
 
     var city: String {
         location.components(separatedBy: ",").first ?? location
+    }
+
+    var distanceText: String? {
+        guard let distance else { return nil }
+        if distance < 1000 {
+            return "\(Int(distance)) м"
+        } else {
+            return String(format: "%.1f км", distance / 1000.0)
+        }
     }
 }
 

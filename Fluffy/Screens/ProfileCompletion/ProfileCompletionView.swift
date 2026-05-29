@@ -267,7 +267,7 @@ struct ProfileCompletionView: View {
 private enum ProfileCompletionLayout {
     static let backgroundHeight: CGFloat = 318
     static let panelTop: CGFloat = 108
-    static let contentTop: CGFloat = 246
+    static let contentTop: CGFloat = 295
 
     static func panelHeight(for screenHeight: CGFloat) -> CGFloat {
         max(screenHeight + 210, 1_050)

@@ -36,6 +36,16 @@ struct APIMarketplaceService: MarketplaceServicing {
             queryItems.append(URLQueryItem(name: "search", value: search))
         }
 
+        if let lat = query.latitude {
+            queryItems.append(URLQueryItem(name: "latitude", value: "\(lat)"))
+        }
+        if let lon = query.longitude {
+            queryItems.append(URLQueryItem(name: "longitude", value: "\(lon)"))
+        }
+        if let rad = query.radius {
+            queryItems.append(URLQueryItem(name: "radius", value: "\(rad)"))
+        }
+
         let page: BackendPage<BackendListingResponse> = try await client.get(
             "/api/v1/listings",
             queryItems: queryItems,
@@ -144,6 +154,12 @@ struct APIMarketplaceService: MarketplaceServicing {
             accessToken: accessToken
         )
         return response.message(currentUserID: sessionStore.loadSession()?.user.id)
+    }
+
+    func markRead(conversationID: String) async throws {
+        let accessToken = try await authenticatedClient.accessToken()
+        let path = "/api/v1/chats/\(conversationID)/read"
+        let _: EmptyResponse = try await client.post(path, body: EmptyBody(), accessToken: accessToken)
     }
 
     func updateUserProfile(_ draft: UserProfileDraft) async throws -> UserProfile {
@@ -378,6 +394,7 @@ private struct BackendListingResponse: Decodable {
     let date: Date?
     let createdAt: Date?
     let isFavorite: Bool
+    let distance: Double?
 
     func listing(isFavorite favoriteOverride: Bool? = nil) -> Listing {
         Listing(
@@ -397,7 +414,8 @@ private struct BackendListingResponse: Decodable {
             tags: tags,
             isUrgent: isUrgent,
             pricePerDay: pricePerDay ?? price,
-            isFavorite: favoriteOverride ?? isFavorite
+            isFavorite: favoriteOverride ?? isFavorite,
+            distance: distance
         )
     }
 }

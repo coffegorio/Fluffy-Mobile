@@ -98,17 +98,21 @@ final class MainViewModel {
     private weak var coordinator: MainCoordinating?
     private let marketplaceService: MarketplaceServicing
     private let mapService: MapServicing
+    private let mediaService: MediaServicing
+    private let webSocketService = WebSocketService()
 
     init(
         session: AuthSession?,
         coordinator: MainCoordinating?,
         marketplaceService: MarketplaceServicing,
-        mapService: MapServicing
+        mapService: MapServicing,
+        mediaService: MediaServicing
     ) {
         self.session = session
         self.coordinator = coordinator
         self.marketplaceService = marketplaceService
         self.mapService = mapService
+        self.mediaService = mediaService
 
         #if DEBUG
         if let rawTab = ProcessInfo.processInfo.value(after: "-UITestInitialTab"),
@@ -142,6 +146,11 @@ final class MainViewModel {
             mapMarkers = []
         }
         #endif
+
+        if let token = session?.accessToken {
+            webSocketService.delegate = self
+            webSocketService.connect(token: token)
+        }
     }
 
     var urgentListings: [Listing] {
@@ -375,6 +384,49 @@ final class MainViewModel {
         }
     }
 
+    func sendPhotoMessage(data: Data, in conversationID: String) {
+        guard let index = conversations.firstIndex(where: { $0.id == conversationID }) else { return }
+
+        let now = String(localized: "chat_now")
+        let pendingID = "pending-\(UUID().uuidString)"
+        let outgoingPlaceholder = ChatMessage(
+            id: pendingID,
+            text: "[photo]",
+            sender: .me,
+            time: now
+        )
+
+        conversations[index].messages.append(outgoingPlaceholder)
+        conversations[index].lastMessage = String(localized: "chat_photo_last_message", defaultValue: "📸 Фото")
+        conversations[index].time = now
+        conversations[index].unreadCount = 0
+
+        Task {
+            do {
+                let uuidString = UUID().uuidString
+                let url = try await mediaService.uploadChatPhoto(
+                    data: data,
+                    chatID: conversationID,
+                    fileName: "\(uuidString).jpg",
+                    mimeType: "image/jpeg"
+                )
+
+                let sent = try await marketplaceService.sendMessage(url.absoluteString, in: conversationID)
+
+                if let currentIndex = conversations.firstIndex(where: { $0.id == conversationID }),
+                   let messageIndex = conversations[currentIndex].messages.firstIndex(where: { $0.id == pendingID }) {
+                    conversations[currentIndex].messages[messageIndex] = sent
+                    conversations[currentIndex].lastMessage = String(localized: "chat_photo_last_message", defaultValue: "📸 Фото")
+                }
+            } catch {
+                if let currentIndex = conversations.firstIndex(where: { $0.id == conversationID }) {
+                    conversations[currentIndex].messages.removeAll(where: { $0.id == pendingID })
+                }
+                errorMessage = String(localized: "marketplace_action_error")
+            }
+        }
+    }
+
     func showAddListing() {
         activeSheet = .addListing
     }
@@ -437,7 +489,15 @@ final class MainViewModel {
     }
 
     func signOut() {
+        webSocketService.disconnect()
         coordinator?.signOut()
+    }
+
+    deinit {
+        let service = webSocketService
+        Task { @MainActor in
+            service.disconnect()
+        }
     }
 
     private func performAction(_ action: () async throws -> Void) async {
@@ -473,3 +533,59 @@ private extension String {
     }
 }
 #endif
+
+extension MainViewModel: WebSocketServiceDelegate {
+    func webSocketService(_ service: WebSocketService, didReceiveMessage message: WebSocketChatMessage) {
+        let sender: ChatMessage.Sender = message.senderId == session?.user.id ? .me : .them
+        
+        guard let index = conversations.firstIndex(where: { $0.id == message.chatId }) else {
+            Task {
+                await refreshConversations()
+            }
+            return
+        }
+        
+        if conversations[index].messages.contains(where: { $0.id == message.id }) {
+            return
+        }
+        
+        conversations[index].messages.removeAll(where: { $0.id.hasPrefix("pending-") && $0.text == message.text })
+        
+        let timeString = DateFormatter.localizedString(from: message.createdAt ?? Date(), dateStyle: .medium, timeStyle: .short)
+        let chatMessage = ChatMessage(
+            id: message.id,
+            text: message.text,
+            sender: sender,
+            time: timeString
+        )
+        
+        conversations[index].messages.append(chatMessage)
+        
+        let isPhoto = message.text.hasPrefix("http") && (message.text.contains("/chats/") || message.text.contains("/media/"))
+        let displayLastMessage = isPhoto ? String(localized: "chat_photo_last_message", defaultValue: "📸 Фото") : message.text
+        
+        conversations[index].lastMessage = displayLastMessage
+        conversations[index].time = timeString
+        
+        let isCurrentlyViewing = path.contains(.conversation(message.chatId))
+        if !isCurrentlyViewing && sender == .them {
+            conversations[index].unreadCount += 1
+        } else if isCurrentlyViewing {
+            Task {
+                try? await marketplaceService.markRead(conversationID: message.chatId)
+            }
+        }
+        
+        let conversation = conversations.remove(at: index)
+        conversations.insert(conversation, at: 0)
+    }
+
+    func refreshConversations() async {
+        do {
+            let fetched = try await marketplaceService.fetchConversations()
+            self.conversations = fetched
+        } catch {
+            print("Failed to refresh conversations: \(error)")
+        }
+    }
+}

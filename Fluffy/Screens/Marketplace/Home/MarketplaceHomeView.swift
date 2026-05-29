@@ -28,36 +28,34 @@ struct MarketplaceHomeView: View {
                             title: "home_empty_title",
                             subtitle: "home_empty_subtitle"
                         )
-                    } else {
-                        if !viewModel.urgentListings.isEmpty {
-                            urgentSection
-                        }
+                    } else if !viewModel.urgentListings.isEmpty {
+                        urgentSection
+                    }
 
-                        HomePromoBanner(
-                            eyebrow: "home_shelters_eyebrow",
-                            title: "home_shelters_title",
-                            subtitle: "home_shelters_subtitle",
-                            systemImage: "heart.text.square.fill",
-                            tint: .black.opacity(0.68),
-                            imageURL: viewModel.shelters.first?.imageURL,
-                            accessibilityIdentifier: "home_shelters_banner",
-                            action: viewModel.showShelters
-                        )
+                    HomePromoBanner(
+                        eyebrow: "home_shelters_eyebrow",
+                        title: "home_shelters_title",
+                        subtitle: "home_shelters_subtitle",
+                        systemImage: "heart.text.square.fill",
+                        tint: .black.opacity(0.68),
+                        imageURL: viewModel.shelters.first?.imageURL,
+                        accessibilityIdentifier: "home_shelters_banner",
+                        action: viewModel.showShelters
+                    )
 
-                        HomePromoBanner(
-                            eyebrow: "home_petsitting_eyebrow",
-                            title: "home_petsitting_title",
-                            subtitle: "home_petsitting_subtitle",
-                            systemImage: "figure.walk.motion",
-                            tint: AppTheme.accent.opacity(0.85),
-                            imageURL: viewModel.petSitters.first?.avatarURL,
-                            accessibilityIdentifier: "home_petsitting_banner",
-                            action: viewModel.showPetSitting
-                        )
+                    HomePromoBanner(
+                        eyebrow: "home_petsitting_eyebrow",
+                        title: "home_petsitting_title",
+                        subtitle: "home_petsitting_subtitle",
+                        systemImage: "figure.walk.motion",
+                        tint: AppTheme.accent.opacity(0.85),
+                        imageURL: viewModel.petSitters.first?.avatarURL,
+                        accessibilityIdentifier: "home_petsitting_banner",
+                        action: viewModel.showPetSitting
+                    )
 
-                        if !viewModel.recentListings.isEmpty {
-                            recentSection
-                        }
+                    if !viewModel.recentListings.isEmpty {
+                        recentSection
                     }
                 }
             }

@@ -20,9 +20,7 @@ struct AuthPanel: View {
 
     var body: some View {
         ZStack {
-            WelcomeWaveShape()
-                .fill(Color.white)
-                .ignoresSafeArea(.container, edges: .bottom)
+            Color.clear
 
             VStack(alignment: .leading, spacing: 0) {
                 AuthHeader()

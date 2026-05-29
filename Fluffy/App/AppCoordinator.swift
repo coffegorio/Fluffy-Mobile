@@ -143,7 +143,8 @@ private extension AppCoordinator {
             session: currentSession,
             coordinator: self,
             marketplaceService: dependencies.marketplaceService,
-            mapService: dependencies.mapService
+            mapService: dependencies.mapService,
+            mediaService: dependencies.mediaService
         )
     }
 

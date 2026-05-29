@@ -4,6 +4,7 @@
 //
 
 import Observation
+import PhotosUI
 import SwiftUI
 
 struct ConversationView: View {
@@ -13,6 +14,7 @@ struct ConversationView: View {
     let conversationID: String
 
     @State private var draft = ""
+    @State private var selectedPhotoItem: PhotosPickerItem? = nil
 
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -25,6 +27,15 @@ struct ConversationView: View {
             }
             .background(AppTheme.background)
             .navigationBarBackButtonHidden()
+            .onChange(of: selectedPhotoItem) { _, item in
+                guard let item else { return }
+                Task {
+                    if let data = try? await item.loadTransferable(type: Data.self) {
+                        viewModel.sendPhotoMessage(data: data, in: conversationID)
+                    }
+                    selectedPhotoItem = nil
+                }
+            }
         } else {
             Text("chat_missing_conversation")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -106,6 +117,15 @@ struct ConversationView: View {
 
     private var composer: some View {
         HStack(spacing: 10) {
+            PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
+                Image(systemName: "photo.on.rectangle.angled")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(AppTheme.text)
+                    .frame(width: 42, height: 42)
+                    .background(AppTheme.muted, in: Circle())
+            }
+            .accessibilityLabel(Text("chat_attach_photo"))
+
             TextField("chat_message_placeholder", text: $draft, axis: .vertical)
                 .lineLimit(1...4)
                 .padding(.horizontal, 14)
@@ -140,6 +160,12 @@ struct ConversationView: View {
 private struct MessageBubble: View {
     let message: ChatMessage
 
+    private var isImageMessage: Bool {
+        guard let url = URL(string: message.text) else { return false }
+        let ext = url.pathExtension.lowercased()
+        return ["jpg", "jpeg", "png", "webp", "gif"].contains(ext) || message.text.contains("/uploads/")
+    }
+
     var body: some View {
         HStack {
             if message.sender == .me {
@@ -147,26 +173,52 @@ private struct MessageBubble: View {
             }
 
             VStack(alignment: message.sender == .me ? .trailing : .leading, spacing: 4) {
-                Text(message.text)
-                    .font(.system(size: 15))
-                    .foregroundStyle(message.sender == .me ? .white : AppTheme.text)
+                if isImageMessage, let url = URL(string: message.text) {
+                    RemoteImageView(url: url)
+                        .aspectRatio(contentMode: .fill)
+                        .frame(maxWidth: 220, maxHeight: 220)
+                        .clipShape(
+                            UnevenRoundedRectangle(
+                                topLeadingRadius: 16,
+                                bottomLeadingRadius: message.sender == .me ? 16 : 4,
+                                bottomTrailingRadius: message.sender == .me ? 4 : 16,
+                                topTrailingRadius: 16
+                            )
+                        )
+                        .overlay(alignment: .bottomTrailing) {
+                            Text(message.time)
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background(Color.black.opacity(0.45), in: Capsule())
+                                .padding(8)
+                        }
+                        .shadow(color: .black.opacity(0.06), radius: 5, y: 2)
+                } else {
+                    VStack(alignment: message.sender == .me ? .trailing : .leading, spacing: 4) {
+                        Text(message.text)
+                            .font(.system(size: 15))
+                            .foregroundStyle(message.sender == .me ? .white : AppTheme.text)
 
-                Text(message.time)
-                    .font(.system(size: 10))
-                    .foregroundStyle(message.sender == .me ? .white.opacity(0.75) : AppTheme.secondaryText)
+                        Text(message.time)
+                            .font(.system(size: 10))
+                            .foregroundStyle(message.sender == .me ? .white.opacity(0.75) : AppTheme.secondaryText)
+                    }
+                    .padding(.horizontal, 13)
+                    .padding(.vertical, 9)
+                    .background(
+                        message.sender == .me ? AppTheme.accent : AppTheme.surface,
+                        in: UnevenRoundedRectangle(
+                            topLeadingRadius: 18,
+                            bottomLeadingRadius: message.sender == .me ? 18 : 5,
+                            bottomTrailingRadius: message.sender == .me ? 5 : 18,
+                            topTrailingRadius: 18
+                        )
+                    )
+                    .shadow(color: .black.opacity(message.sender == .me ? 0 : 0.04), radius: 7, y: 3)
+                }
             }
-            .padding(.horizontal, 13)
-            .padding(.vertical, 9)
-            .background(
-                message.sender == .me ? AppTheme.accent : AppTheme.surface,
-                in: UnevenRoundedRectangle(
-                    topLeadingRadius: 18,
-                    bottomLeadingRadius: message.sender == .me ? 18 : 5,
-                    bottomTrailingRadius: message.sender == .me ? 5 : 18,
-                    topTrailingRadius: 18
-                )
-            )
-            .shadow(color: .black.opacity(message.sender == .me ? 0 : 0.04), radius: 7, y: 3)
 
             if message.sender == .them {
                 Spacer(minLength: 48)

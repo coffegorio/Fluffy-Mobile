@@ -58,10 +58,22 @@ struct ListingGridCard: View {
                         listingMeta
                     }
 
-                    Label(listing.location, systemImage: "mappin.and.ellipse")
-                        .font(.system(size: 10))
-                        .foregroundStyle(AppTheme.secondaryText)
-                        .lineLimit(1)
+                    HStack(spacing: 4) {
+                        Label(listing.location, systemImage: "mappin.and.ellipse")
+                            .font(.system(size: 10))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .lineLimit(1)
+                        
+                        if let distanceText = listing.distanceText {
+                            Text("·")
+                                .font(.system(size: 10))
+                                .foregroundStyle(AppTheme.secondaryText)
+                            Text(distanceText)
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(AppTheme.accent)
+                                .lineLimit(1)
+                        }
+                    }
                 }
                 .padding(12)
             }
@@ -148,10 +160,22 @@ struct ListingRowCard: View {
                         .font(.system(size: 12))
                         .foregroundStyle(AppTheme.secondaryText)
 
-                    Label(listing.location, systemImage: "mappin.and.ellipse")
-                        .font(.system(size: 11))
-                        .foregroundStyle(AppTheme.secondaryText)
-                        .lineLimit(1)
+                    HStack(spacing: 4) {
+                        Label(listing.location, systemImage: "mappin.and.ellipse")
+                            .font(.system(size: 11))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .lineLimit(1)
+                        
+                        if let distanceText = listing.distanceText {
+                            Text("·")
+                                .font(.system(size: 11))
+                                .foregroundStyle(AppTheme.secondaryText)
+                            Text(distanceText)
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(AppTheme.accent)
+                                .lineLimit(1)
+                        }
+                    }
 
                     HStack {
                         ListingBadge(category: listing.category)

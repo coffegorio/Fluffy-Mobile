@@ -7,6 +7,7 @@ import Foundation
 
 protocol MediaServicing {
     func uploadProfileAvatar(data: Data, fileName: String, mimeType: String) async throws -> URL
+    func uploadChatPhoto(data: Data, chatID: String, fileName: String, mimeType: String) async throws -> URL
 }
 
 struct APIMediaService: MediaServicing {
@@ -34,11 +35,32 @@ struct APIMediaService: MediaServicing {
         }
         return url
     }
+
+    func uploadChatPhoto(data: Data, chatID: String, fileName: String, mimeType: String) async throws -> URL {
+        let accessToken = try await authenticatedClient.accessToken()
+        let response: MediaUploadResponse = try await client.uploadMultipart(
+            "/api/v1/media/upload",
+            fields: ["ownerType": "chat", "listingId": chatID],
+            fileFieldName: "file",
+            fileName: fileName,
+            mimeType: mimeType,
+            fileData: data,
+            accessToken: accessToken
+        )
+        guard let url = URL(string: response.publicUrl) else {
+            throw APIClientError.invalidURL
+        }
+        return url
+    }
 }
 
 struct MockMediaService: MediaServicing {
     func uploadProfileAvatar(data: Data, fileName: String, mimeType: String) async throws -> URL {
         URL(string: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&fit=crop&auto=format")!
+    }
+
+    func uploadChatPhoto(data: Data, chatID: String, fileName: String, mimeType: String) async throws -> URL {
+        URL(string: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&h=500&fit=crop&auto=format")!
     }
 }
 

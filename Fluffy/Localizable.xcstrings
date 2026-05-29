@@ -1247,6 +1247,40 @@
     "G" : {
 
     },
+    "home_empty_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listings from Lipetsk will appear here after publication. You can add the first one."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Здесь появятся объявления из Липецка после публикации. Можно добавить первое."
+          }
+        }
+      }
+    },
+    "home_empty_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No listings"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет объявлений"
+          }
+        }
+      }
+    },
     "home_petsitting_eyebrow" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1311,40 +1345,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Свежие объявления"
-          }
-        }
-      }
-    },
-    "home_empty_subtitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Listings from Lipetsk will appear here after publication. You can add the first one."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Здесь появятся объявления из Липецка после публикации. Можно добавить первое."
-          }
-        }
-      }
-    },
-    "home_empty_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No listings"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нет объявлений"
           }
         }
       }
@@ -1672,6 +1672,40 @@
         }
       }
     },
+    "map_empty_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Markers will appear when listings, shelters or pet sitters are published in Lipetsk."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Метки появятся после публикации объявлений, приютов или pet-sitter-ов в Липецке."
+          }
+        }
+      }
+    },
+    "map_empty_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No map markers"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет меток на карте"
+          }
+        }
+      }
+    },
     "map_marker_found" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1770,40 +1804,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Карта"
-          }
-        }
-      }
-    },
-    "map_empty_subtitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Markers will appear when listings, shelters or pet sitters are published in Lipetsk."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Метки появятся после публикации объявлений, приютов или pet-sitter-ов в Липецке."
-          }
-        }
-      }
-    },
-    "map_empty_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No map markers"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нет меток на карте"
           }
         }
       }
@@ -1944,6 +1944,23 @@
         }
       }
     },
+    "petsitting_banner_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Going on vacation?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Уедете в отпуск?"
+          }
+        }
+      }
+    },
     "petsitting_empty_subtitle" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1974,23 +1991,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нет pet-sitter-ов"
-          }
-        }
-      }
-    },
-    "petsitting_banner_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Going on vacation?"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Уедете в отпуск?"
           }
         }
       }
@@ -2093,125 +2093,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Управление сессией подключено. Сейчас можно выйти; refresh token добавим вместе с бэкендом."
-          }
-        }
-      }
-    },
-    "profile_completion_section" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About you"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "О вас"
-          }
-        }
-      }
-    },
-    "profile_completion_subtitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "We need a few details before you can fully use Fluffy."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нужно несколько деталей, чтобы вы могли полноценно пользоваться Флаффи."
-          }
-        }
-      }
-    },
-    "profile_completion_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Complete your profile"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Заполните анкету"
-          }
-        }
-      }
-    },
-    "profile_form_city" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "City"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Город"
-          }
-        }
-      }
-    },
-    "profile_form_handle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Handle"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Никнейм"
-          }
-        }
-      }
-    },
-    "profile_form_name" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Имя"
-          }
-        }
-      }
-    },
-    "profile_form_phone" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Phone"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Телефон"
           }
         }
       }
@@ -2369,6 +2250,23 @@
         }
       }
     },
+    "profile_completion_section" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About you"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "О вас"
+          }
+        }
+      }
+    },
     "profile_completion_sign_out" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2382,6 +2280,108 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Выйти из аккаунта"
+          }
+        }
+      }
+    },
+    "profile_completion_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We need a few details before you can fully use Fluffy."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нужно несколько деталей, чтобы вы могли полноценно пользоваться Флаффи."
+          }
+        }
+      }
+    },
+    "profile_completion_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete your profile"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заполните анкету"
+          }
+        }
+      }
+    },
+    "profile_form_city" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "City"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Город"
+          }
+        }
+      }
+    },
+    "profile_form_handle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handle"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Никнейм"
+          }
+        }
+      }
+    },
+    "profile_form_name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Имя"
+          }
+        }
+      }
+    },
+    "profile_form_phone" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phone"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Телефон"
           }
         }
       }
@@ -2522,40 +2522,6 @@
         }
       }
     },
-    "profile_verification_message" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "To become a full-access user, complete verification. Access will be confirmed by the backend."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Чтобы стать пользователем с полным доступом, необходимо пройти верификацию. Доступ будет подтверждаться бэкендом."
-          }
-        }
-      }
-    },
-    "profile_verification_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verification required"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нужна верификация"
-          }
-        }
-      }
-    },
     "profile_stat_days" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2603,6 +2569,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Объявлений"
+          }
+        }
+      }
+    },
+    "profile_verification_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To become a full-access user, complete verification. Access will be confirmed by the backend."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чтобы стать пользователем с полным доступом, необходимо пройти верификацию. Доступ будет подтверждаться бэкендом."
+          }
+        }
+      }
+    },
+    "profile_verification_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verification required"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нужна верификация"
           }
         }
       }
@@ -2726,23 +2726,6 @@
         }
       }
     },
-    "shelters_subtitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verified shelters from the backend"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Проверенные приюты из backend"
-          }
-        }
-      }
-    },
     "shelters_empty_subtitle" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2773,6 +2756,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нет приютов"
+          }
+        }
+      }
+    },
+    "shelters_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verified shelters from the backend"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверенные приюты из backend"
           }
         }
       }
@@ -2929,6 +2929,9 @@
           }
         }
       }
+    },
+    "Липецк" : {
+
     }
   },
   "version" : "1.0"

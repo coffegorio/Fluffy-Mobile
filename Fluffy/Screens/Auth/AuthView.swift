@@ -20,6 +20,17 @@ struct AuthView: View {
             VStack {
                 Spacer()
 
+                AuthWaveShape()
+                    .fill(Color.white)
+                    .frame(height: AuthLayout.panelHeight + 300)
+                    .padding(.bottom, -300)
+            }
+            .ignoresSafeArea(.container, edges: .bottom)
+            .ignoresSafeArea(.keyboard)
+
+            VStack {
+                Spacer()
+
                 AuthPanel(
                     email: $viewModel.email,
                     code: $viewModel.code,
@@ -44,6 +55,7 @@ struct AuthView: View {
 
                 Spacer()
             }
+            .ignoresSafeArea(.keyboard)
         }
         .navigationBarBackButtonHidden()
     }

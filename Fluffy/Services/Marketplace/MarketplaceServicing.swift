@@ -13,6 +13,7 @@ protocol MarketplaceServicing {
     func setFavorite(listingID: String, isFavorite: Bool) async throws
     func createConversation(for listingID: String) async throws -> Conversation
     func sendMessage(_ text: String, in conversationID: String) async throws -> ChatMessage
+    func markRead(conversationID: String) async throws
     func updateUserProfile(_ draft: UserProfileDraft) async throws -> UserProfile
     func requestProfileVerification(message: String?) async throws -> ProfileVerificationResponse
     func fetchProfileVerificationStatus() async throws -> ProfileVerificationResponse

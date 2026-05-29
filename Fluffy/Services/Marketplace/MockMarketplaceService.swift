@@ -108,6 +108,10 @@ struct MockMarketplaceService: MarketplaceServicing {
         )
     }
 
+    func markRead(conversationID: String) async throws {
+        try await simulateLatency()
+    }
+
     func updateUserProfile(_ draft: UserProfileDraft) async throws -> UserProfile {
         try await simulateLatency()
         return UserProfile(

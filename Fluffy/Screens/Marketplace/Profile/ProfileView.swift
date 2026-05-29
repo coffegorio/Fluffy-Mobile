@@ -17,35 +17,43 @@ struct ProfileView: View {
     ]
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("tab_profile")
-                    .font(.system(size: 24, weight: .heavy))
+        ZStack {
+            AppTheme.background
+                .ignoresSafeArea()
 
-                if let errorMessage = viewModel.errorMessage, viewModel.profile == nil {
-                    MarketplaceErrorStateView(message: errorMessage, retry: viewModel.refresh)
-                } else if let profile = viewModel.profile {
-                    profileHeader(profile)
-                    if viewModel.isVerificationRequired {
-                        verificationNotice
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("tab_profile")
+                        .font(.system(size: 24, weight: .heavy))
+
+                    if let errorMessage = viewModel.errorMessage, viewModel.profile == nil {
+                        MarketplaceErrorStateView(message: errorMessage, retry: viewModel.refresh)
+                    } else if let profile = viewModel.profile {
+                        profileHeader(profile)
+                        if viewModel.isVerificationRequired {
+                            verificationNotice
+                        }
+                        stats(profile)
+                        myListings
+                        menu
+                        signOutButton
+                    } else if viewModel.isLoading {
+                        ProfileSkeletonView()
+                    } else {
+                        MarketplaceErrorStateView(message: String(localized: "marketplace_load_error"), retry: viewModel.refresh)
                     }
-                    stats(profile)
-                    myListings
-                    menu
-                    signOutButton
-                } else if viewModel.isLoading {
-                    ProfileSkeletonView()
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.top, 22)
+                .padding(.bottom, 24)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 22)
-            .padding(.bottom, 24)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .scrollIndicators(.hidden)
+            .refreshable {
+                await viewModel.refresh()
+            }
         }
-        .scrollIndicators(.hidden)
-        .refreshable {
-            await viewModel.refresh()
-        }
-        .background(AppTheme.background)
     }
 
     private func profileHeader(_ profile: UserProfile) -> some View {

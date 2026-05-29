@@ -16,7 +16,7 @@ struct MainView: View {
             ZStack(alignment: .bottomTrailing) {
                 tabView(selection: $viewModel.selectedTab)
 
-                if viewModel.selectedTab == .explore || viewModel.selectedTab == .favorites {
+                if viewModel.selectedTab == .explore {
                     addListingButton
                 }
             }

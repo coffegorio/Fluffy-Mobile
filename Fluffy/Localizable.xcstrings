@@ -4,6 +4,9 @@
     "!" : {
 
     },
+    "·" : {
+
+    },
     "%@ · %@" : {
       "localizations" : {
         "en" : {
@@ -587,6 +590,9 @@
         }
       }
     },
+    "chat_attach_photo" : {
+
+    },
     "chat_message_placeholder" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -668,6 +674,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сейчас"
+          }
+        }
+      }
+    },
+    "chat_photo_last_message" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "📸 Фото"
           }
         }
       }

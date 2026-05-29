@@ -436,7 +436,6 @@ final class MainViewModel {
 
         await performAction {
             let listing = try await marketplaceService.createListing(from: draft)
-            listings.insert(listing, at: 0)
             favoriteListingIDs.remove(listing.id)
             activeSheet = .status(title: "listing_created_title", message: "listing_created_message")
         }

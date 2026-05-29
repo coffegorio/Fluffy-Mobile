@@ -1457,13 +1457,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "It is visible in your local feed."
+            "value" : "It has been sent for moderation and will appear in the feed after approval."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Оно появилось в локальной ленте."
+            "value" : "Оно отправлено на модерацию и появится в ленте после проверки."
           }
         }
       }
@@ -1474,13 +1474,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Listing created"
+            "value" : "Listing sent for review"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Объявление создано"
+            "value" : "Объявление на проверке"
           }
         }
       }

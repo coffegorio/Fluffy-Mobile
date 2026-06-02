@@ -2,18 +2,18 @@
 
 Fluffy is a SwiftUI iOS marketplace for pets and animal-related services. The product direction is similar to a classified marketplace, but focused on lost pets, found pets, rehoming, shelters, pet-sitting, boarding, chats, favorites, and profile verification.
 
-The app is currently frontend-first and runs without a real backend. All network-like data is provided by mock services behind protocols, so the UI can be built and tested before backend integration.
+The production app uses the Vapor backend through API-backed services. Mock services remain behind the same protocols for previews, screenshot generation, and explicit UI-test launch arguments.
 
 ## Current Status
 
 - Native SwiftUI app targeting modern iOS.
 - MVVM-style screen state through observable view models.
-- Auth flow with email/code backend integration, token storage in Keychain, and mock fallback for UI tests.
+- Auth flow with email/code backend integration, refresh token storage in Keychain using `WhenUnlockedThisDeviceOnly`, and mock fallback for UI tests.
 - Marketplace home, search, favorites, chats, profile, detail pages, shelters, pet-sitting, listing creation sheet.
 - Russian and English localization through `Localizable.xcstrings`.
 - Liquid Glass-inspired visual system.
 - Skeleton loading states for client-server screens.
-- Initial MapKit preparation with mock map markers and a replaceable map service layer.
+- MapKit integration behind a replaceable map service layer.
 
 ## Architecture
 
@@ -21,12 +21,12 @@ The app is split into feature and infrastructure layers:
 
 - `Fluffy/App` - app coordinator, routing, dependency composition.
 - `Fluffy/Models` - domain models for marketplace and maps.
-- `Fluffy/Services` - protocols and mock implementations for auth, marketplace, map data, and session storage.
+- `Fluffy/Services` - API-backed services, protocols, mock implementations for previews/tests, map data, media upload, and session storage.
 - `Fluffy/Screens` - SwiftUI screens grouped by feature.
 - `Fluffy/UIComponents` - shared UI controls and marketplace components.
 - `Fluffy/Support` - theme and visual style helpers.
 
-The dependency entry point is `AppDependencies`. Backend work should replace mock services with API-backed implementations while keeping screen code mostly unchanged.
+The dependency entry point is `AppDependencies`. `AppDependencies.live` uses backend services by default; mock services are opt-in for previews and UI-test arguments.
 
 ## Maps
 
@@ -88,7 +88,7 @@ The auth service calls:
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
 
-The default API base URL is `http://127.0.0.1:8080`, which works with the iOS simulator when the Vapor backend runs on the same Mac. Override it with `-APIBaseURL` or the `FLUFFY_API_BASE_URL` environment variable. UI tests continue to use `MockAuthService` through existing `-UITestAuthEmail` launch arguments.
+Debug builds default to `http://127.0.0.1:8080`, which works with the iOS simulator when the Vapor backend runs on the same Mac. Release builds default to `https://api.fluffy-infra.ru`. Override either with `-APIBaseURL` or the `FLUFFY_API_BASE_URL` environment variable. UI tests continue to use `MockAuthService` through existing `-UITestAuthEmail` launch arguments.
 
 Marketplace screens call real backend endpoints:
 

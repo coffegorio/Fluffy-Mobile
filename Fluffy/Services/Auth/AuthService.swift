@@ -17,6 +17,7 @@ enum AuthRole: String, Codable, Hashable {
     case verifiedUser
     case moderator
     case admin
+    case superAdmin
 }
 
 enum VerificationStatus: String, Codable, Hashable {

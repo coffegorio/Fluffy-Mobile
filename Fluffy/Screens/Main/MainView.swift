@@ -92,6 +92,10 @@ struct MainView: View {
             PetSittingView(viewModel: viewModel)
         case .map:
             MarketplaceMapView(viewModel: viewModel)
+        case .myListings:
+            MyListingsView(viewModel: viewModel)
+        case .myReports:
+            MyReportsView(viewModel: viewModel)
         }
     }
 
@@ -118,10 +122,35 @@ struct MainView: View {
             AddListingSheet(isSaving: viewModel.isPerformingAction) { draft in
                 await viewModel.createListing(from: draft)
             }
+        case let .editListing(listing):
+            EditListingSheet(listing: listing, isSaving: viewModel.isPerformingAction) { draft in
+                await viewModel.updateListing(listing, draft: draft)
+            }
+        case let .reportListing(listing):
+            ReportListingSheet(listing: listing, isSaving: viewModel.isPerformingAction) { draft in
+                await viewModel.reportListing(listing, draft: draft)
+            }
+        case let .reportTarget(target):
+            ReportTargetSheet(target: target, isSaving: viewModel.isPerformingAction) { draft in
+                await viewModel.reportTarget(target, draft: draft)
+            }
+        case .verificationRequest:
+            VerificationRequestSheet(isSaving: viewModel.isPerformingAction) { message in
+                await viewModel.requestProfileVerification(message: message)
+            }
         case let .status(title, message):
             MarketplaceStatusSheet(title: LocalizedStringKey(title), message: LocalizedStringKey(message))
         case let .profileAction(action):
-            ProfileActionSheet(action: action, onSignOut: viewModel.signOut)
+            ProfileActionSheet(
+                action: action,
+                notificationPreferences: viewModel.notificationPreferences,
+                blockedUsers: viewModel.blockedUsers,
+                onSignOut: viewModel.signOut,
+                onSignOutEverywhere: viewModel.signOutEverywhere,
+                onDeleteAccount: viewModel.deleteAccount,
+                onUnblockUser: viewModel.unblockUser,
+                onUpdateNotificationPreferences: viewModel.updateNotificationPreferences
+            )
         }
     }
 }

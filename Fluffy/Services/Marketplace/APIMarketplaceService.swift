@@ -89,24 +89,41 @@ struct APIMarketplaceService: MarketplaceServicing {
         let chats: [BackendChatResponse] = try await client.get("/api/v1/chats", accessToken: accessToken)
         var conversations: [Conversation] = []
         for chat in chats {
-            let messagesPage: BackendPage<BackendChatMessageResponse> = try await client.get(
-                "/api/v1/chats/\(chat.id)/messages",
-                accessToken: accessToken
-            )
-            let listing = try await fetchListingIfNeeded(chat.listingId, accessToken: accessToken)
             conversations.append(chat.conversation(
-                messages: messagesPage.items,
-                listing: listing,
+                messages: [],
+                listing: nil,
                 currentUserID: sessionStore.loadSession()?.user.id
             ))
         }
         return conversations
     }
 
+    func fetchMessages(conversationID: String) async throws -> [ChatMessage] {
+        let accessToken = try await authenticatedClient.accessToken()
+        let messagesPage: BackendPage<BackendChatMessageResponse> = try await client.get(
+            "/api/v1/chats/\(conversationID)/messages",
+            accessToken: accessToken
+        )
+        return messagesPage.items.map { $0.message(currentUserID: sessionStore.loadSession()?.user.id) }
+    }
+
     func fetchUserProfile() async throws -> UserProfile {
         let accessToken = try await authenticatedClient.accessToken()
         let response: BackendProfileResponse = try await client.get("/api/v1/profile/me", accessToken: accessToken)
         return response.profile
+    }
+
+    func fetchMyListings() async throws -> [Listing] {
+        let accessToken = try await authenticatedClient.accessToken()
+        let page: BackendPage<BackendListingResponse> = try await client.get(
+            "/api/v1/profile/listings",
+            queryItems: [
+                URLQueryItem(name: "page", value: "1"),
+                URLQueryItem(name: "pageSize", value: "100")
+            ],
+            accessToken: accessToken
+        )
+        return page.items.map { $0.listing(isFavorite: false) }
     }
 
     func createListing(from draft: ListingDraft) async throws -> Listing {
@@ -118,6 +135,31 @@ struct APIMarketplaceService: MarketplaceServicing {
             accessToken: accessToken
         )
         return response.listing()
+    }
+
+    func updateListing(id: String, draft: ListingEditDraft) async throws -> Listing {
+        let accessToken = try await authenticatedClient.accessToken()
+        let response: BackendListingResponse = try await client.patch(
+            "/api/v1/listings/\(id)",
+            body: ListingUpdateRequest(draft: draft),
+            accessToken: accessToken
+        )
+        return response.listing(isFavorite: false)
+    }
+
+    func closeListing(id: String) async throws -> Listing {
+        let accessToken = try await authenticatedClient.accessToken()
+        let response: BackendListingResponse = try await client.patch(
+            "/api/v1/listings/\(id)",
+            body: ListingStatusUpdateRequest(status: .closed),
+            accessToken: accessToken
+        )
+        return response.listing(isFavorite: false)
+    }
+
+    func deleteListing(id: String) async throws {
+        let accessToken = try await authenticatedClient.accessToken()
+        let _: EmptyResponse = try await client.delete("/api/v1/listings/\(id)", accessToken: accessToken)
     }
 
     func setFavorite(listingID: String, isFavorite: Bool) async throws {
@@ -173,6 +215,11 @@ struct APIMarketplaceService: MarketplaceServicing {
         return response.profile
     }
 
+    func deleteAccount() async throws {
+        let accessToken = try await authenticatedClient.accessToken()
+        let _: EmptyResponse = try await client.delete("/api/v1/profile/me", accessToken: accessToken)
+    }
+
     func requestShelterHelp(_ request: ShelterHelpRequest) async throws {
         let accessToken = try await authenticatedClient.accessToken()
         let _: EmptyResponse = try await client.post(
@@ -221,6 +268,103 @@ struct APIMarketplaceService: MarketplaceServicing {
         return response.verification
     }
 
+    func fetchNotificationPreferences() async throws -> NotificationPreferences {
+        let accessToken = try await authenticatedClient.accessToken()
+        let response: BackendNotificationPreferencesResponse = try await client.get(
+            "/api/v1/profile/notification-preferences",
+            accessToken: accessToken
+        )
+        return response.preferences
+    }
+
+    func updateNotificationPreferences(_ preferences: NotificationPreferences) async throws -> NotificationPreferences {
+        let accessToken = try await authenticatedClient.accessToken()
+        let response: BackendNotificationPreferencesResponse = try await client.patch(
+            "/api/v1/profile/notification-preferences",
+            body: NotificationPreferencesUpdateRequest(preferences: preferences),
+            accessToken: accessToken
+        )
+        return response.preferences
+    }
+
+    func registerPushDevice(token: String, deviceID: String, environment: PushEnvironment) async throws -> PushDevice {
+        let accessToken = try await authenticatedClient.accessToken()
+        let response: BackendPushDeviceResponse = try await client.post(
+            "/api/v1/profile/push-devices",
+            body: PushDeviceRegistrationRequest(deviceId: deviceID, token: token, platform: "ios", environment: environment.rawValue),
+            accessToken: accessToken
+        )
+        return response.device
+    }
+
+    func unregisterPushDevice(deviceID: String) async throws -> PushDevice {
+        let accessToken = try await authenticatedClient.accessToken()
+        let response: BackendPushDeviceResponse = try await client.delete(
+            "/api/v1/profile/push-devices/\(encodedPathComponent(deviceID))",
+            accessToken: accessToken
+        )
+        return response.device
+    }
+
+    func blockUser(userID: String) async throws {
+        let accessToken = try await authenticatedClient.accessToken()
+        let _: BackendUserBlockResponse = try await client.post(
+            "/api/v1/profile/blocks/\(encodedPathComponent(userID))",
+            body: EmptyBody(),
+            accessToken: accessToken
+        )
+    }
+
+    func fetchBlockedUsers() async throws -> [BlockedUser] {
+        let accessToken = try await authenticatedClient.accessToken()
+        let response: [BackendUserBlockResponse] = try await client.get(
+            "/api/v1/profile/blocks",
+            accessToken: accessToken
+        )
+        return response.map(\.blockedUser)
+    }
+
+    func unblockUser(userID: String) async throws {
+        let accessToken = try await authenticatedClient.accessToken()
+        let _: EmptyResponse = try await client.delete(
+            "/api/v1/profile/blocks/\(encodedPathComponent(userID))",
+            accessToken: accessToken
+        )
+    }
+
+    func report(targetType: ReportTargetType, targetID: String, draft: ReportDraft) async throws -> ReportResponse {
+        let accessToken = try await authenticatedClient.accessToken()
+        let details = draft.details.trimmingCharacters(in: .whitespacesAndNewlines)
+        let response: BackendReportResponse = try await client.post(
+            "/api/v1/reports",
+            body: ReportCreateRequest(
+                targetType: targetType.rawValue,
+                targetId: targetID,
+                reason: draft.reason.title,
+                details: details.isEmpty ? nil : details
+            ),
+            accessToken: accessToken
+        )
+        return response.report
+    }
+
+    func reportListing(id: String, draft: ListingReportDraft) async throws -> ReportResponse {
+        try await report(targetType: .listing, targetID: id, draft: draft)
+    }
+
+    func fetchMyReports() async throws -> [ReportResponse] {
+        let accessToken = try await authenticatedClient.accessToken()
+        let page: BackendPage<BackendReportResponse> = try await client.get(
+            "/api/v1/profile/reports",
+            queryItems: [
+                URLQueryItem(name: "page", value: "1"),
+                URLQueryItem(name: "pageSize", value: "50")
+            ],
+            accessToken: accessToken
+        )
+        return page.items.map(\.report)
+    }
+
     private func fetchListingIfNeeded(_ id: String?, accessToken: String) async throws -> BackendListingResponse? {
         guard let id else { return nil }
         return try await client.get("/api/v1/listings/\(id)", accessToken: accessToken)
@@ -235,6 +379,10 @@ struct APIMarketplaceService: MarketplaceServicing {
             ]
         )
         return page.items.first { $0.id == id }
+    }
+
+    private func encodedPathComponent(_ value: String) -> String {
+        value.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? value
     }
 }
 
@@ -303,6 +451,31 @@ private struct ListingCreateRequest: Encodable {
     }
 }
 
+private struct ListingUpdateRequest: Encodable {
+    let title: String
+    let description: String
+    let city: String
+    let location: String
+    let isUrgent: Bool
+    let price: Int?
+    let pricePerDay: Int?
+
+    init(draft: ListingEditDraft) {
+        let location = draft.location.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.title = draft.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.description = draft.description.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.city = location.components(separatedBy: ",").first?.trimmingCharacters(in: .whitespacesAndNewlines) ?? location
+        self.location = location
+        self.isUrgent = draft.isUrgent
+        self.price = draft.pricePerDay
+        self.pricePerDay = draft.pricePerDay
+    }
+}
+
+private struct ListingStatusUpdateRequest: Encodable {
+    let status: ListingStatus
+}
+
 private struct ProfileUpdateRequest: Encodable {
     let name: String
     let handle: String?
@@ -322,6 +495,99 @@ private struct ProfileUpdateRequest: Encodable {
 
 private struct VerificationCreateRequest: Encodable {
     let message: String?
+}
+
+private struct NotificationPreferencesUpdateRequest: Encodable {
+    let replies: Bool
+    let moderation: Bool
+    let safety: Bool
+
+    init(preferences: NotificationPreferences) {
+        self.replies = preferences.replies
+        self.moderation = preferences.moderation
+        self.safety = preferences.safety
+    }
+}
+
+private struct BackendNotificationPreferencesResponse: Decodable {
+    let replies: Bool
+    let moderation: Bool
+    let safety: Bool
+    let updatedAt: Date?
+
+    var preferences: NotificationPreferences {
+        NotificationPreferences(replies: replies, moderation: moderation, safety: safety, updatedAt: updatedAt)
+    }
+}
+
+private struct PushDeviceRegistrationRequest: Encodable {
+    let deviceId: String
+    let token: String
+    let platform: String
+    let environment: String
+}
+
+private struct BackendPushDeviceResponse: Decodable {
+    let id: String
+    let deviceId: String
+    let environment: PushEnvironment
+    let enabled: Bool
+
+    var device: PushDevice {
+        PushDevice(id: id, deviceID: deviceId, environment: environment, enabled: enabled)
+    }
+}
+
+private struct BackendUserBlockResponse: Decodable {
+    let id: String
+    let blockedUserId: String
+    let blockedUserName: String?
+    let blockedUserHandle: String?
+    let blockedUserAvatarUrl: String?
+    let createdAt: Date?
+
+    var blockedUser: BlockedUser {
+        let fallbackName = blockedUserHandle ?? "Пользователь"
+        return BlockedUser(
+            id: id,
+            userID: blockedUserId,
+            name: clean(blockedUserName, fallback: fallbackName),
+            handle: blockedUserHandle,
+            avatarURL: URL(string: blockedUserAvatarUrl ?? ""),
+            createdAt: createdAt
+        )
+    }
+}
+
+private struct ReportCreateRequest: Encodable {
+    let targetType: String
+    let targetId: String
+    let reason: String
+    let details: String?
+}
+
+private struct BackendReportResponse: Decodable {
+    let id: String
+    let targetType: ReportTargetType
+    let targetId: String
+    let reason: String
+    let details: String?
+    let status: ReportStatus
+    let createdAt: Date?
+    let updatedAt: Date?
+
+    var report: ReportResponse {
+        ReportResponse(
+            id: id,
+            targetType: targetType,
+            targetID: targetId,
+            reason: reason,
+            details: details,
+            status: status,
+            createdAt: createdAt,
+            updatedAt: updatedAt
+        )
+    }
 }
 
 private struct BackendVerificationStatusResponse: Decodable {
@@ -345,6 +611,7 @@ private struct ChatMessageCreateRequest: Encodable {
 
 private struct BackendProfileResponse: Decodable {
     let email: String
+    let verificationStatus: VerificationStatus?
     let name: String?
     let handle: String?
     let city: String?
@@ -365,6 +632,7 @@ private struct BackendProfileResponse: Decodable {
             email: email,
             phone: clean(phone, fallback: ""),
             avatarURL: URL(string: avatarURL ?? avatarUrl ?? ""),
+            verificationStatus: verificationStatus ?? .notStarted,
             rating: rating ?? 0,
             reviews: reviews ?? 0,
             listingsCount: listingsCount ?? 0,
@@ -376,7 +644,9 @@ private struct BackendProfileResponse: Decodable {
 
 private struct BackendListingResponse: Decodable {
     let id: String
+    let ownerId: String?
     let category: String
+    let status: ListingStatus?
     let title: String
     let description: String
     let petType: String?
@@ -391,6 +661,7 @@ private struct BackendListingResponse: Decodable {
     let isUrgent: Bool
     let price: Int?
     let pricePerDay: Int?
+    let reward: Int?
     let tags: [String]
     let photos: [BackendListingPhotoResponse]?
     let imageURL: String?
@@ -405,7 +676,9 @@ private struct BackendListingResponse: Decodable {
     func listing(isFavorite favoriteOverride: Bool? = nil) -> Listing {
         Listing(
             id: id,
+            ownerID: ownerId,
             category: ListingCategory(backendValue: category),
+            status: status ?? .active,
             title: title,
             animalType: AnimalType(rawValue: animalType ?? petType ?? "") ?? .other,
             breed: clean(breed, fallback: "-"),
@@ -420,6 +693,7 @@ private struct BackendListingResponse: Decodable {
             tags: tags,
             isUrgent: isUrgent,
             pricePerDay: pricePerDay ?? price,
+            reward: reward,
             isFavorite: favoriteOverride ?? isFavorite,
             distance: distance
         )
@@ -492,8 +766,14 @@ private struct BackendPetSitterResponse: Decodable {
 private struct BackendChatResponse: Decodable {
     let id: String
     let listingId: String?
+    let listingTitle: String?
+    let listingStatus: ListingStatus?
     let participantIds: [String]
+    let otherParticipantId: String?
+    let otherParticipantName: String?
+    let otherParticipantAvatarUrl: String?
     let lastMessage: String?
+    let lastMessageAt: Date?
     let unreadCount: Int?
     let createdAt: Date?
     let updatedAt: Date?
@@ -508,12 +788,13 @@ private struct BackendChatResponse: Decodable {
         let last = mappedMessages.last?.text ?? lastMessage ?? String(localized: "chat_new_conversation_message")
         return Conversation(
             id: id,
-            name: petSitter?.name ?? listing?.authorName ?? listing?.author?.name ?? String(localized: "chat_unknown_user"),
-            avatarURL: petSitter?.petSitter.avatarURL ?? URL(string: listing?.authorAvatarURL ?? listing?.author?.avatarUrl ?? ""),
+            name: petSitter?.name ?? otherParticipantName ?? listing?.authorName ?? listing?.author?.name ?? String(localized: "chat_unknown_user"),
+            avatarURL: petSitter?.petSitter.avatarURL ?? URL(string: otherParticipantAvatarUrl ?? listing?.authorAvatarURL ?? listing?.author?.avatarUrl ?? ""),
             lastMessage: last,
-            time: listingDate(from: updatedAt ?? createdAt),
+            time: listingDate(from: lastMessageAt ?? updatedAt ?? createdAt),
             unreadCount: unreadCount ?? 0,
-            listingTitle: listing?.title ?? petSitter?.name ?? String(localized: "add_listing"),
+            listingTitle: listingTitle ?? listing?.title ?? petSitter?.name ?? String(localized: "add_listing"),
+            otherParticipantID: otherParticipantId ?? participantIds.first { $0 != currentUserID },
             messages: mappedMessages
         )
     }
@@ -528,6 +809,7 @@ private struct BackendChatMessageResponse: Decodable {
     func message(currentUserID: String?) -> ChatMessage {
         ChatMessage(
             id: id,
+            senderID: senderId,
             text: text,
             sender: senderId == currentUserID ? .me : .them,
             time: listingDate(from: createdAt)

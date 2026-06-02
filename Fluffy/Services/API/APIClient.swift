@@ -6,6 +6,8 @@
 import Foundation
 
 struct APIClient {
+    static let requestIDHeader = "X-Request-ID"
+
     let configuration: APIConfiguration
     var urlSession: URLSession = .shared
 
@@ -113,6 +115,7 @@ struct APIClient {
 
         var request = URLRequest(url: url)
         request.httpMethod = method
+        request.setValue(UUID().uuidString, forHTTPHeaderField: Self.requestIDHeader)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
@@ -166,11 +169,16 @@ struct APIClient {
         }
 
         guard (200..<300).contains(httpResponse.statusCode) else {
+            let responseRequestID = httpResponse.value(forHTTPHeaderField: Self.requestIDHeader)
             if let errorEnvelope = try? decoder.decode(APIErrorEnvelope.self, from: data) {
-                throw APIClientError.api(code: errorEnvelope.error.code, message: errorEnvelope.error.message)
+                throw APIClientError.api(
+                    code: errorEnvelope.error.code,
+                    message: errorEnvelope.error.message,
+                    requestID: errorEnvelope.error.requestId ?? responseRequestID
+                )
             }
 
-            throw APIClientError.httpStatus(httpResponse.statusCode)
+            throw APIClientError.httpStatus(httpResponse.statusCode, requestID: responseRequestID)
         }
     }
 }
@@ -178,19 +186,51 @@ struct APIClient {
 enum APIClientError: LocalizedError {
     case invalidURL
     case invalidResponse
-    case httpStatus(Int)
-    case api(code: String, message: String)
+    case httpStatus(Int, requestID: String?)
+    case api(code: String, message: String, requestID: String?)
 
     var errorDescription: String? {
+        let message: String
         switch self {
         case .invalidURL:
-            "Invalid API URL."
+            message = "Invalid API URL."
         case .invalidResponse:
-            "Invalid API response."
-        case let .httpStatus(status):
-            "Request failed with status \(status)."
-        case let .api(_, message):
-            message
+            message = "Invalid API response."
+        case let .httpStatus(status, _):
+            message = status == 429 ? "Слишком много попыток. Попробуйте немного позже." : "Request failed with status \(status)."
+        case let .api(code, apiMessage, _):
+            message = Self.userFacingAPIMessage(code: code, fallback: apiMessage)
+        }
+        guard let requestID else { return message }
+        return "\(message)\nID запроса: \(requestID)"
+    }
+
+    var requestID: String? {
+        switch self {
+        case .invalidURL, .invalidResponse:
+            nil
+        case let .httpStatus(_, requestID), let .api(_, _, requestID):
+            requestID
+        }
+    }
+
+    var apiCode: String? {
+        switch self {
+        case let .api(code, _, _):
+            code
+        default:
+            nil
+        }
+    }
+
+    private static func userFacingAPIMessage(code: String, fallback: String) -> String {
+        switch code {
+        case "rate_limited":
+            return "Слишком много попыток. Попробуйте немного позже."
+        case "verification_required":
+            return "Для этого действия нужна верификация профиля. Отправьте заявку в профиле и дождитесь проверки."
+        default:
+            return fallback
         }
     }
 }
@@ -202,6 +242,7 @@ private struct APIErrorEnvelope: Decodable {
 private struct APIErrorBody: Decodable {
     let code: String
     let message: String
+    let requestId: String?
 }
 
 private extension Data {

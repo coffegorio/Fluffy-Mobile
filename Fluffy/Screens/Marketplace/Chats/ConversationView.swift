@@ -15,6 +15,7 @@ struct ConversationView: View {
 
     @State private var draft = ""
     @State private var selectedPhotoItem: PhotosPickerItem? = nil
+    @State private var conversationToBlock: Conversation?
 
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -35,6 +36,20 @@ struct ConversationView: View {
                     }
                     selectedPhotoItem = nil
                 }
+            }
+            .task(id: conversationID) {
+                await viewModel.loadConversationMessagesIfNeeded(conversationID)
+            }
+            .confirmationDialog("Заблокировать пользователя?", isPresented: blockDialogBinding) {
+                if let conversationToBlock {
+                    Button("Заблокировать", role: .destructive) {
+                        Task {
+                            await viewModel.blockUser(in: conversationToBlock)
+                        }
+                    }
+                }
+            } message: {
+                Text("Диалог будет скрыт, а новые сообщения между вами больше не будут доставляться.")
             }
         } else {
             Text("chat_missing_conversation")
@@ -72,16 +87,26 @@ struct ConversationView: View {
 
             Spacer()
 
-            Button {
-                viewModel.showCallPlaceholder()
+            Menu {
+                Button(role: .destructive) {
+                    viewModel.showReportUser(in: conversation)
+                } label: {
+                    Label("Пожаловаться на пользователя", systemImage: "flag.fill")
+                }
+
+                Button(role: .destructive) {
+                    conversationToBlock = conversation
+                } label: {
+                    Label("Заблокировать пользователя", systemImage: "hand.raised.fill")
+                }
             } label: {
-                Image(systemName: "phone.fill")
+                Image(systemName: "shield.checkered")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(AppTheme.text)
+                    .foregroundStyle(AppTheme.accent)
                     .frame(width: 34, height: 34)
-                    .background(AppTheme.muted, in: Circle())
+                    .background(AppTheme.accentSoft, in: Circle())
             }
-            .accessibilityLabel(Text("common_call"))
+            .accessibilityLabel(Text("Безопасность чата"))
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -93,12 +118,27 @@ struct ConversationView: View {
         }
     }
 
+    private var blockDialogBinding: Binding<Bool> {
+        Binding(
+            get: { conversationToBlock != nil },
+            set: { isPresented in
+                if !isPresented {
+                    conversationToBlock = nil
+                }
+            }
+        )
+    }
+
     private func messages(_ conversation: Conversation) -> some View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 9) {
+                    safetyNotice
+
                     ForEach(conversation.messages) { message in
-                        MessageBubble(message: message)
+                        MessageBubble(message: message) {
+                            viewModel.showReportMessage(message, in: conversation)
+                        }
                             .id(message.id)
                     }
                 }
@@ -113,6 +153,22 @@ struct ConversationView: View {
                 }
             }
         }
+    }
+
+    private var safetyNotice: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "shield.fill")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(AppTheme.accent)
+
+            Text("Держите договоренности в чате Fluffy. Если что-то пойдет не так, переписка поможет модераторам разобраться.")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(AppTheme.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppTheme.accentSoft.opacity(0.65), in: RoundedRectangle(cornerRadius: AppTheme.compactRadius))
     }
 
     private var composer: some View {
@@ -159,6 +215,7 @@ struct ConversationView: View {
 
 private struct MessageBubble: View {
     let message: ChatMessage
+    let onReport: () -> Void
 
     private var isImageMessage: Bool {
         guard let url = URL(string: message.text) else { return false }
@@ -222,6 +279,15 @@ private struct MessageBubble: View {
 
             if message.sender == .them {
                 Spacer(minLength: 48)
+            }
+        }
+        .contextMenu {
+            if message.sender == .them {
+                Button(role: .destructive) {
+                    onReport()
+                } label: {
+                    Label("Пожаловаться на сообщение", systemImage: "flag.fill")
+                }
             }
         }
     }

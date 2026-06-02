@@ -34,7 +34,7 @@ struct KeychainAuthSessionStore: AuthSessionStoring {
 
         var query = baseQuery
         query[kSecValueData as String] = data
-        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        query[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         SecItemAdd(query as CFDictionary, nil)
     }
 

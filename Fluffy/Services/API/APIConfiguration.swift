@@ -19,7 +19,11 @@ struct APIConfiguration {
             return APIConfiguration(baseURL: url)
         }
 
-        return APIConfiguration(baseURL: URL(string: "http://147.45.72.69:8080")!)
+        #if DEBUG
+        return APIConfiguration(baseURL: URL(string: "http://127.0.0.1:8080")!)
+        #else
+        return APIConfiguration(baseURL: URL(string: "https://api.fluffy-infra.ru")!)
+        #endif
     }
 }
 

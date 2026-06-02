@@ -5,6 +5,7 @@
 
 import Foundation
 import Observation
+import OSLog
 import SwiftUI
 
 enum MainTab: String, CaseIterable, Identifiable, Hashable {
@@ -43,16 +44,26 @@ enum MarketplaceRoute: Hashable {
     case shelters
     case petSitting
     case map
+    case myListings
+    case myReports
 }
 
 enum MarketplaceSheet: Identifiable, Hashable {
     case addListing
+    case editListing(Listing)
+    case reportListing(Listing)
+    case reportTarget(ReportTarget)
+    case verificationRequest
     case status(title: String, message: String)
     case profileAction(ProfileMenuAction)
 
     var id: String {
         switch self {
         case .addListing: "addListing"
+        case let .editListing(listing): "editListing-\(listing.id)"
+        case let .reportListing(listing): "reportListing-\(listing.id)"
+        case let .reportTarget(target): "reportTarget-\(target.sheetID)"
+        case .verificationRequest: "verificationRequest"
         case let .status(title, message): "status-\(title)-\(message)"
         case let .profileAction(action): "profileAction-\(action.rawValue)"
         }
@@ -61,6 +72,7 @@ enum MarketplaceSheet: Identifiable, Hashable {
 
 enum ProfileMenuAction: String, Hashable {
     case listings
+    case reports
     case notifications
     case security
     case help
@@ -69,12 +81,14 @@ enum ProfileMenuAction: String, Hashable {
 
 protocol MainCoordinating: AnyObject {
     func updateSession(_ session: AuthSession)
-    func signOut()
+    func signOut(allDevices: Bool)
 }
 
 @Observable
 @MainActor
 final class MainViewModel {
+    private static let logger = Logger(subsystem: "ru.fluffy.app", category: "main-view-model")
+
     var selectedTab: MainTab = .home
     var path: [MarketplaceRoute] = []
     var activeSheet: MarketplaceSheet?
@@ -82,8 +96,12 @@ final class MainViewModel {
     var shelters: [Shelter] = []
     var petSitters: [PetSitter] = []
     var conversations: [Conversation] = []
+    var myListings: [Listing] = []
+    var myReports: [ReportResponse] = []
     var profile: UserProfile?
     var profileVerification: ProfileVerificationResponse?
+    var notificationPreferences = NotificationPreferences()
+    var blockedUsers: [BlockedUser] = []
     var mapMarkers: [MapMarker] = []
     var selectedMapFilters: Set<MapMarkerKind> = Set(MapMarkerKind.allCases)
     var favoriteListingIDs: Set<String> = []
@@ -99,20 +117,24 @@ final class MainViewModel {
     private let marketplaceService: MarketplaceServicing
     private let mapService: MapServicing
     private let mediaService: MediaServicing
+    private let accessTokenProvider: AccessTokenProviding
     private let webSocketService = WebSocketService()
+    private var loadedConversationMessageIDs: Set<String> = []
 
     init(
         session: AuthSession?,
         coordinator: MainCoordinating?,
         marketplaceService: MarketplaceServicing,
         mapService: MapServicing,
-        mediaService: MediaServicing
+        mediaService: MediaServicing,
+        accessTokenProvider: AccessTokenProviding
     ) {
         self.session = session
         self.coordinator = coordinator
         self.marketplaceService = marketplaceService
         self.mapService = mapService
         self.mediaService = mediaService
+        self.accessTokenProvider = accessTokenProvider
 
         #if DEBUG
         if let rawTab = ProcessInfo.processInfo.value(after: "-UITestInitialTab"),
@@ -131,6 +153,10 @@ final class MainViewModel {
                     path = [.petSitting]
                 case "map":
                     path = [.map]
+                case "myListings":
+                    path = [.myListings]
+                case "myReports":
+                    path = [.myReports]
                 default:
                     break
                 }
@@ -142,14 +168,19 @@ final class MainViewModel {
             shelters = MockMarketplaceData.shelters
             petSitters = MockMarketplaceData.petSitters
             conversations = MockMarketplaceData.conversations
+            myListings = MockMarketplaceData.myListings
+            myReports = MockMarketplaceData.reports
+            notificationPreferences = MockMarketplaceData.notificationPreferences
             profile = MockMarketplaceData.profile
             mapMarkers = []
         }
         #endif
 
-        if let token = session?.accessToken {
+        if session != nil {
             webSocketService.delegate = self
-            webSocketService.connect(token: token)
+            webSocketService.connect { [accessTokenProvider] in
+                try await accessTokenProvider.accessToken()
+            }
         }
     }
 
@@ -182,12 +213,16 @@ final class MainViewModel {
         conversations.reduce(0) { $0 + $1.unreadCount }
     }
 
-    var myListings: [Listing] {
-        Array(listings.prefix(2))
-    }
-
     var isVerificationRequired: Bool {
         session?.requiresProfileCompletion == true
+    }
+
+    var currentVerificationStatus: VerificationStatus {
+        profileVerification?.status ?? profile?.verificationStatus ?? session?.verificationStatus ?? .notStarted
+    }
+
+    var shouldShowVerificationNotice: Bool {
+        currentVerificationStatus != .approved
     }
 
     func load(force: Bool = false) async {
@@ -209,8 +244,11 @@ final class MainViewModel {
             async let shelters = marketplaceService.fetchShelters()
             async let petSitters = marketplaceService.fetchPetSitters()
             async let conversations = marketplaceService.fetchConversations()
+            async let myListings = marketplaceService.fetchMyListings()
+            async let myReports = marketplaceService.fetchMyReports()
             async let profile = marketplaceService.fetchUserProfile()
             async let profileVerification = marketplaceService.fetchProfileVerificationStatus()
+            async let notificationPreferences = marketplaceService.fetchNotificationPreferences()
             async let mapMarkers = mapService.fetchMarkers(in: .lipetsk, filters: selectedMapFilters)
 
             let page = try await listingsPage
@@ -219,9 +257,12 @@ final class MainViewModel {
             hasMoreListings = page.hasMore
             self.shelters = (try? await shelters) ?? []
             self.petSitters = (try? await petSitters) ?? []
-            self.conversations = (try? await conversations) ?? []
+            self.conversations = mergeConversationSummaries((try? await conversations) ?? [])
+            self.myListings = (try? await myListings) ?? []
+            self.myReports = (try? await myReports) ?? []
             self.profile = try? await profile
             self.profileVerification = try? await profileVerification
+            self.notificationPreferences = (try? await notificationPreferences) ?? NotificationPreferences()
             self.mapMarkers = (try? await mapMarkers) ?? []
             isLoading = false
 
@@ -232,9 +273,12 @@ final class MainViewModel {
             shelters = []
             petSitters = []
             conversations = []
+            myListings = []
+            myReports = []
+            notificationPreferences = NotificationPreferences()
             mapMarkers = []
             isLoading = false
-            errorMessage = nil
+            errorMessage = userFacingMessage(for: error, fallback: "Не удалось загрузить данные. Проверьте интернет и попробуйте еще раз.")
         }
     }
 
@@ -274,6 +318,16 @@ final class MainViewModel {
 
     func showListing(_ listing: Listing) {
         path.append(.listingDetail(listing.id))
+    }
+
+    func showMyListings() {
+        selectedTab = .profile
+        path.append(.myListings)
+    }
+
+    func showMyReports() {
+        selectedTab = .profile
+        path.append(.myReports)
     }
 
     func showShelters() {
@@ -326,9 +380,14 @@ final class MainViewModel {
             conversations[index].unreadCount = 0
         }
         path.append(.conversation(conversation.id))
+        Task {
+            await loadConversationMessagesIfNeeded(conversation.id)
+        }
     }
 
     func startChat(for listing: Listing) {
+        guard listing.canReceiveMessages, !isOwnListing(listing) else { return }
+
         if let conversation = conversations.first(where: { $0.listingTitle == listing.title }) {
             showConversation(conversation)
         } else {
@@ -336,6 +395,7 @@ final class MainViewModel {
                 await performAction {
                     let conversation = try await marketplaceService.createConversation(for: listing.id)
                     conversations.insert(conversation, at: 0)
+                    loadedConversationMessageIDs.insert(conversation.id)
                     selectedTab = .chats
                     path.append(.conversation(conversation.id))
                 }
@@ -344,7 +404,7 @@ final class MainViewModel {
     }
 
     func listing(withID id: String) -> Listing? {
-        listings.first { $0.id == id }
+        listings.first { $0.id == id } ?? myListings.first { $0.id == id }
     }
 
     func conversation(withID id: String) -> Conversation? {
@@ -359,8 +419,12 @@ final class MainViewModel {
 
         let now = String(localized: "chat_now")
         let pendingID = "pending-\(UUID().uuidString)"
+        let previousLastMessage = conversations[index].lastMessage
+        let previousTime = conversations[index].time
+        let previousUnreadCount = conversations[index].unreadCount
         let outgoing = ChatMessage(
             id: pendingID,
+            senderID: session?.user.id,
             text: trimmed,
             sender: .me,
             time: now
@@ -379,6 +443,15 @@ final class MainViewModel {
                     conversations[currentIndex].messages[messageIndex] = sent
                 }
             } catch {
+                if let currentIndex = conversations.firstIndex(where: { $0.id == conversationID }) {
+                    let pendingIsStillLast = conversations[currentIndex].messages.last?.id == pendingID
+                    conversations[currentIndex].messages.removeAll(where: { $0.id == pendingID })
+                    if pendingIsStillLast {
+                        conversations[currentIndex].lastMessage = previousLastMessage
+                        conversations[currentIndex].time = previousTime
+                        conversations[currentIndex].unreadCount = previousUnreadCount
+                    }
+                }
                 errorMessage = String(localized: "marketplace_action_error")
             }
         }
@@ -389,8 +462,12 @@ final class MainViewModel {
 
         let now = String(localized: "chat_now")
         let pendingID = "pending-\(UUID().uuidString)"
+        let previousLastMessage = conversations[index].lastMessage
+        let previousTime = conversations[index].time
+        let previousUnreadCount = conversations[index].unreadCount
         let outgoingPlaceholder = ChatMessage(
             id: pendingID,
+            senderID: session?.user.id,
             text: "[photo]",
             sender: .me,
             time: now
@@ -420,7 +497,13 @@ final class MainViewModel {
                 }
             } catch {
                 if let currentIndex = conversations.firstIndex(where: { $0.id == conversationID }) {
+                    let pendingIsStillLast = conversations[currentIndex].messages.last?.id == pendingID
                     conversations[currentIndex].messages.removeAll(where: { $0.id == pendingID })
+                    if pendingIsStillLast {
+                        conversations[currentIndex].lastMessage = previousLastMessage
+                        conversations[currentIndex].time = previousTime
+                        conversations[currentIndex].unreadCount = previousUnreadCount
+                    }
                 }
                 errorMessage = String(localized: "marketplace_action_error")
             }
@@ -451,7 +534,166 @@ final class MainViewModel {
             }
             let listing = try await marketplaceService.createListing(from: submission)
             favoriteListingIDs.remove(listing.id)
-            activeSheet = .status(title: "listing_created_title", message: "listing_created_message")
+            upsertMyListing(listing)
+            selectedTab = .profile
+            activeSheet = nil
+            path.append(.myListings)
+        }
+    }
+
+    func refreshMyListings() async {
+        do {
+            myListings = try await marketplaceService.fetchMyListings()
+        } catch {
+            errorMessage = userFacingMessage(for: error, fallback: "Не удалось обновить ваши объявления.")
+        }
+    }
+
+    func showEditListing(_ listing: Listing) {
+        activeSheet = .editListing(listing)
+    }
+
+    func showReportListing(_ listing: Listing) {
+        guard !isOwnListing(listing) else { return }
+        activeSheet = .reportListing(listing)
+    }
+
+    func updateListing(_ listing: Listing, draft: ListingEditDraft) async {
+        guard draft.isValid else { return }
+
+        await performAction {
+            let updated = try await marketplaceService.updateListing(id: listing.id, draft: draft)
+            replaceListing(updated)
+            activeSheet = nil
+        }
+    }
+
+    func closeListing(_ listing: Listing) {
+        Task {
+            await performAction {
+                let updated = try await marketplaceService.closeListing(id: listing.id)
+                replaceListing(updated)
+            }
+        }
+    }
+
+    func deleteListing(_ listing: Listing) {
+        Task {
+            await performAction {
+                try await marketplaceService.deleteListing(id: listing.id)
+                myListings.removeAll { $0.id == listing.id }
+                listings.removeAll { $0.id == listing.id }
+                favoriteListingIDs.remove(listing.id)
+                path.removeAll { route in
+                    if case let .listingDetail(id) = route {
+                        return id == listing.id
+                    }
+                    return false
+                }
+            }
+        }
+    }
+
+    func isOwnListing(_ listing: Listing) -> Bool {
+        if myListings.contains(where: { $0.id == listing.id }) {
+            return true
+        }
+        return listing.ownerID == session?.user.id
+    }
+
+    func reportListing(_ listing: Listing, draft: ListingReportDraft) async {
+        guard draft.isValid, !isOwnListing(listing) else { return }
+
+        await performAction {
+            let report = try await marketplaceService.reportListing(id: listing.id, draft: draft)
+            upsertReport(report)
+            activeSheet = .status(title: "Жалоба отправлена", message: "Спасибо. Модераторы проверят объявление и примут решение.")
+        }
+    }
+
+    func showReportUser(in conversation: Conversation) {
+        guard let userID = conversation.otherParticipantID else { return }
+        activeSheet = .reportTarget(
+            ReportTarget(
+                type: .user,
+                id: userID,
+                title: "Пожаловаться на пользователя",
+                subtitle: conversation.name
+            )
+        )
+    }
+
+    func blockUser(in conversation: Conversation) async {
+        guard let userID = conversation.otherParticipantID else { return }
+
+        await performAction {
+            try await marketplaceService.blockUser(userID: userID)
+            blockedUsers = try await marketplaceService.fetchBlockedUsers()
+            conversations.removeAll { $0.id == conversation.id || $0.otherParticipantID == userID }
+            path.removeAll { route in
+                if case let .conversation(id) = route {
+                    return id == conversation.id
+                }
+                return false
+            }
+            activeSheet = .status(title: "Пользователь заблокирован", message: "Диалог скрыт. Новые сообщения между вами больше не будут доставляться.")
+        }
+    }
+
+    func refreshBlockedUsers() async {
+        do {
+            blockedUsers = try await marketplaceService.fetchBlockedUsers()
+        } catch {
+            errorMessage = userFacingMessage(for: error, fallback: "Не удалось загрузить список блокировок.")
+        }
+    }
+
+    func unblockUser(_ blockedUser: BlockedUser) async {
+        await performAction {
+            try await marketplaceService.unblockUser(userID: blockedUser.userID)
+            blockedUsers.removeAll { $0.userID == blockedUser.userID }
+        }
+    }
+
+    func showReportMessage(_ message: ChatMessage, in conversation: Conversation) {
+        guard message.sender == .them else { return }
+        activeSheet = .reportTarget(
+            ReportTarget(
+                type: .message,
+                id: message.id,
+                title: "Пожаловаться на сообщение",
+                subtitle: message.text
+            )
+        )
+    }
+
+    func reportTarget(_ target: ReportTarget, draft: ReportDraft) async {
+        guard draft.isValid else { return }
+
+        await performAction {
+            let report = try await marketplaceService.report(targetType: target.type, targetID: target.id, draft: draft)
+            upsertReport(report)
+            activeSheet = .status(title: "Жалоба отправлена", message: target.successMessage)
+        }
+    }
+
+    func refreshMyReports() async {
+        do {
+            myReports = try await marketplaceService.fetchMyReports()
+        } catch {
+            errorMessage = userFacingMessage(for: error, fallback: "Не удалось обновить обращения.")
+        }
+    }
+
+    func updateNotificationPreferences(_ preferences: NotificationPreferences) async {
+        let previous = notificationPreferences
+        notificationPreferences = preferences
+
+        do {
+            notificationPreferences = try await marketplaceService.updateNotificationPreferences(preferences)
+        } catch {
+            notificationPreferences = previous
+            errorMessage = userFacingMessage(for: error, fallback: "Не удалось сохранить настройки уведомлений.")
         }
     }
 
@@ -481,6 +723,7 @@ final class MainViewModel {
                 if conversations.contains(where: { $0.id == conversation.id }) == false {
                     conversations.insert(conversation, at: 0)
                 }
+                loadedConversationMessageIDs.insert(conversation.id)
                 selectedTab = .chats
                 path.append(.conversation(conversation.id))
             }
@@ -488,22 +731,47 @@ final class MainViewModel {
     }
 
     func showProfileAction(_ action: ProfileMenuAction) {
-        activeSheet = .profileAction(action)
+        if action == .listings {
+            showMyListings()
+        } else if action == .reports {
+            showMyReports()
+        } else {
+            activeSheet = .profileAction(action)
+            if action == .security {
+                Task {
+                    await refreshBlockedUsers()
+                }
+            }
+        }
     }
 
     func requestProfileVerification(message: String? = nil) async {
         await performAction {
             profileVerification = try await marketplaceService.requestProfileVerification(message: message)
+            activeSheet = .status(title: "Заявка отправлена", message: "Модераторы проверят профиль. Статус появится в профиле.")
         }
     }
 
-    func showCallPlaceholder() {
-        activeSheet = .status(title: "call_unavailable_title", message: "call_unavailable_message")
+    func showVerificationRequest() {
+        activeSheet = .verificationRequest
     }
 
     func signOut() {
         webSocketService.disconnect()
-        coordinator?.signOut()
+        coordinator?.signOut(allDevices: false)
+    }
+
+    func signOutEverywhere() {
+        webSocketService.disconnect()
+        coordinator?.signOut(allDevices: true)
+    }
+
+    func deleteAccount() async {
+        await performAction {
+            try await marketplaceService.deleteAccount()
+            webSocketService.disconnect()
+            coordinator?.signOut(allDevices: true)
+        }
     }
 
     deinit {
@@ -524,8 +792,82 @@ final class MainViewModel {
             isPerformingAction = false
         } catch {
             isPerformingAction = false
-            errorMessage = String(localized: "marketplace_action_error")
+            errorMessage = userFacingMessage(for: error, fallback: String(localized: "marketplace_action_error"))
         }
+    }
+
+    private func upsertMyListing(_ listing: Listing) {
+        if let index = myListings.firstIndex(where: { $0.id == listing.id }) {
+            myListings[index] = listing
+        } else {
+            myListings.insert(listing, at: 0)
+        }
+    }
+
+    private func replaceListing(_ listing: Listing) {
+        upsertMyListing(listing)
+        if let index = listings.firstIndex(where: { $0.id == listing.id }) {
+            listings[index] = listing
+        }
+    }
+
+    private func upsertReport(_ report: ReportResponse) {
+        if let index = myReports.firstIndex(where: { $0.id == report.id }) {
+            myReports[index] = report
+        } else {
+            myReports.insert(report, at: 0)
+        }
+    }
+
+    func loadConversationMessagesIfNeeded(_ conversationID: String) async {
+        guard !loadedConversationMessageIDs.contains(conversationID),
+              conversations.contains(where: { $0.id == conversationID })
+        else { return }
+
+        do {
+            let messages = try await marketplaceService.fetchMessages(conversationID: conversationID)
+            if let index = conversations.firstIndex(where: { $0.id == conversationID }) {
+                conversations[index].messages = mergeMessages(existing: conversations[index].messages, fetched: messages)
+                loadedConversationMessageIDs.insert(conversationID)
+            }
+        } catch {
+            errorMessage = userFacingMessage(for: error, fallback: "Не удалось загрузить сообщения.")
+        }
+    }
+
+    private func mergeConversationSummaries(_ fetched: [Conversation]) -> [Conversation] {
+        fetched.map { conversation in
+            guard let existing = conversations.first(where: { $0.id == conversation.id }) else {
+                return conversation
+            }
+            var merged = conversation
+            merged.messages = existing.messages
+            return merged
+        }
+    }
+
+    private func mergeMessages(existing: [ChatMessage], fetched: [ChatMessage]) -> [ChatMessage] {
+        var seen = Set(fetched.map(\.id))
+        var merged = fetched
+        for message in existing where !seen.contains(message.id) {
+            merged.append(message)
+            seen.insert(message.id)
+        }
+        return merged
+    }
+
+    private func userFacingMessage(for error: Error, fallback: String) -> String {
+        if let localizedError = error as? LocalizedError,
+           let message = localizedError.errorDescription,
+           !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return message
+        }
+
+        if error is URLError {
+            return "Не удалось подключиться к серверу. Проверьте интернет и попробуйте еще раз."
+        }
+
+        return fallback
     }
 }
 
@@ -567,6 +909,7 @@ extension MainViewModel: WebSocketServiceDelegate {
         let timeString = DateFormatter.localizedString(from: message.createdAt ?? Date(), dateStyle: .medium, timeStyle: .short)
         let chatMessage = ChatMessage(
             id: message.id,
+            senderID: message.senderId,
             text: message.text,
             sender: sender,
             time: timeString
@@ -596,9 +939,9 @@ extension MainViewModel: WebSocketServiceDelegate {
     func refreshConversations() async {
         do {
             let fetched = try await marketplaceService.fetchConversations()
-            self.conversations = fetched
+            self.conversations = mergeConversationSummaries(fetched)
         } catch {
-            print("Failed to refresh conversations: \(error)")
+            Self.logger.error("Failed to refresh conversations: \(String(describing: error), privacy: .private)")
         }
     }
 }

@@ -7,6 +7,9 @@
     "·" : {
 
     },
+    "*" : {
+
+    },
     "%@ · %@" : {
       "localizations" : {
         "en" : {
@@ -416,40 +419,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Войти"
-          }
-        }
-      }
-    },
-    "call_unavailable_message" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The UI entry point is ready; backend contact rules will decide when calls are available."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Точка входа готова; бэкенд позже определит, когда звонки доступны."
-          }
-        }
-      }
-    },
-    "call_unavailable_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calls are unavailable"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Звонки недоступны"
           }
         }
       }
@@ -2052,13 +2021,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Support entry point is ready for future help center or chat integration."
+            "value" : "Support contains quick safety answers and account guidance."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Точка входа в поддержку готова для будущего help center или чата."
+            "value" : "Раздел помощи содержит быстрые ответы по безопасности и аккаунту."
           }
         }
       }
@@ -2086,13 +2055,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Notification preferences will connect to push settings and backend subscriptions."
+            "value" : "Notification preferences are saved in your profile and used for push delivery on connected devices."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Настройки уведомлений подключатся к push и подпискам бэкенда."
+            "value" : "Настройки уведомлений сохраняются в профиле и используются для push-доставки на подключенных устройствах."
           }
         }
       }
@@ -2103,13 +2072,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Session management is wired. You can sign out now; token refresh will be added with the backend."
+            "value" : "Session management is wired. You can sign out from this device or all devices."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Управление сессией подключено. Сейчас можно выйти; refresh token добавим вместе с бэкендом."
+            "value" : "Управление сессией подключено. Можно выйти с этого устройства или со всех устройств."
           }
         }
       }
@@ -2947,7 +2916,88 @@
         }
       }
     },
+    "Был ошейник / чип" : {
+
+    },
+    "Вакцинирован" : {
+
+    },
+    "Вид животного" : {
+
+    },
+    "Выйти из аккаунта" : {
+
+    },
+    "Дата" : {
+
+    },
+    "Добавить публикацию" : {
+
+    },
+    "Добавить фото" : {
+
+    },
+    "Добро пожаловать в Fluffy!" : {
+
+    },
+    "Загрузить фото" : {
+
+    },
     "Липецк" : {
+
+    },
+    "Метка Тревога" : {
+
+    },
+    "Насколько срочно" : {
+
+    },
+    "Нужна срочная помощь" : {
+
+    },
+    "Нужно собеседование / договор" : {
+
+    },
+    "Основная информация" : {
+
+    },
+    "Отправить на модерацию" : {
+
+    },
+    "Показываем только поля, которые нужны для выбранного сценария." : {
+
+    },
+    "Пол" : {
+
+    },
+    "Продолжить" : {
+
+    },
+    "Расскажите немного о себе, чтобы другие пользователи могли вас узнать" : {
+
+    },
+    "Способ связи" : {
+
+    },
+    "Срочно" : {
+
+    },
+    "Статус" : {
+
+    },
+    "Стерилизован" : {
+
+    },
+    "Формат" : {
+
+    },
+    "Фото выбрано" : {
+
+    },
+    "Фото поможет быстрее пройти модерацию и получить отклик." : {
+
+    },
+    "Эти данные помогут другим пользователям узнать вас лучше. Вы всегда сможете изменить информацию в профиле." : {
 
     }
   },

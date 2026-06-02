@@ -45,16 +45,28 @@ struct MockMarketplaceService: MarketplaceServicing {
         return MockMarketplaceData.conversations
     }
 
+    func fetchMessages(conversationID: String) async throws -> [ChatMessage] {
+        try await simulateLatency()
+        return MockMarketplaceData.conversations.first { $0.id == conversationID }?.messages ?? []
+    }
+
     func fetchUserProfile() async throws -> UserProfile {
         try await simulateLatency()
         return MockMarketplaceData.profile
+    }
+
+    func fetchMyListings() async throws -> [Listing] {
+        try await simulateLatency()
+        return MockMarketplaceData.myListings
     }
 
     func createListing(from draft: ListingDraft) async throws -> Listing {
         try await simulateLatency()
         return Listing(
             id: "local-\(UUID().uuidString)",
-            category: draft.category,
+            ownerID: "mock-user",
+            category: draft.resolvedCategory,
+            status: .pending,
             title: draft.title.trimmingCharacters(in: .whitespacesAndNewlines),
             animalType: draft.animalType,
             breed: draft.breed.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -72,6 +84,64 @@ struct MockMarketplaceService: MarketplaceServicing {
         )
     }
 
+    func updateListing(id: String, draft: ListingEditDraft) async throws -> Listing {
+        try await simulateLatency()
+        let existing = MockMarketplaceData.myListings.first { $0.id == id } ?? MockMarketplaceData.listings.first { $0.id == id }
+        return Listing(
+            id: id,
+            ownerID: existing?.ownerID ?? "mock-user",
+            category: existing?.category ?? .rehome,
+            status: existing?.status ?? .pending,
+            title: draft.title.trimmingCharacters(in: .whitespacesAndNewlines),
+            animalType: existing?.animalType ?? .dog,
+            breed: existing?.breed ?? "-",
+            age: existing?.age ?? "-",
+            sex: existing?.sex ?? .male,
+            location: draft.location.trimmingCharacters(in: .whitespacesAndNewlines),
+            imageURL: existing?.imageURL,
+            description: draft.description.trimmingCharacters(in: .whitespacesAndNewlines),
+            authorName: existing?.authorName ?? MockMarketplaceData.profile.name,
+            authorAvatarURL: existing?.authorAvatarURL ?? MockMarketplaceData.profile.avatarURL,
+            date: existing?.date ?? String(localized: "chat_now"),
+            tags: existing?.tags ?? [],
+            isUrgent: draft.isUrgent,
+            pricePerDay: draft.pricePerDay,
+            isFavorite: existing?.isFavorite ?? false,
+            distance: existing?.distance
+        )
+    }
+
+    func closeListing(id: String) async throws -> Listing {
+        try await simulateLatency()
+        let existing = MockMarketplaceData.myListings.first { $0.id == id } ?? MockMarketplaceData.listings.first { $0.id == id }
+        return Listing(
+            id: id,
+            ownerID: existing?.ownerID ?? "mock-user",
+            category: existing?.category ?? .rehome,
+            status: .closed,
+            title: existing?.title ?? "Закрытое объявление",
+            animalType: existing?.animalType ?? .dog,
+            breed: existing?.breed ?? "-",
+            age: existing?.age ?? "-",
+            sex: existing?.sex ?? .male,
+            location: existing?.location ?? MockMarketplaceData.profile.city,
+            imageURL: existing?.imageURL,
+            description: existing?.description ?? "",
+            authorName: existing?.authorName ?? MockMarketplaceData.profile.name,
+            authorAvatarURL: existing?.authorAvatarURL ?? MockMarketplaceData.profile.avatarURL,
+            date: existing?.date ?? String(localized: "chat_now"),
+            tags: existing?.tags ?? [],
+            isUrgent: existing?.isUrgent ?? false,
+            pricePerDay: existing?.pricePerDay,
+            isFavorite: false,
+            distance: existing?.distance
+        )
+    }
+
+    func deleteListing(id: String) async throws {
+        try await simulateLatency()
+    }
+
     func setFavorite(listingID: String, isFavorite: Bool) async throws {
         try await simulateLatency()
     }
@@ -87,9 +157,11 @@ struct MockMarketplaceService: MarketplaceServicing {
             time: String(localized: "chat_now"),
             unreadCount: 0,
             listingTitle: listing?.title ?? String(localized: "add_listing"),
+            otherParticipantID: listing?.ownerID ?? "mock-owner",
             messages: [
                 ChatMessage(
                     id: "message-\(UUID().uuidString)",
+                    senderID: "tester@example.com",
                     text: String(localized: "chat_new_conversation_message"),
                     sender: .me,
                     time: String(localized: "chat_now")
@@ -102,6 +174,7 @@ struct MockMarketplaceService: MarketplaceServicing {
         try await simulateLatency()
         return ChatMessage(
             id: "message-\(UUID().uuidString)",
+            senderID: "tester@example.com",
             text: text.trimmingCharacters(in: .whitespacesAndNewlines),
             sender: .me,
             time: String(localized: "chat_now")
@@ -121,12 +194,17 @@ struct MockMarketplaceService: MarketplaceServicing {
             email: MockMarketplaceData.profile.email,
             phone: draft.phone.trimmingCharacters(in: .whitespacesAndNewlines),
             avatarURL: draft.avatarURL ?? MockMarketplaceData.profile.avatarURL,
+            verificationStatus: MockMarketplaceData.profile.verificationStatus,
             rating: MockMarketplaceData.profile.rating,
             reviews: MockMarketplaceData.profile.reviews,
             listingsCount: MockMarketplaceData.profile.listingsCount,
             dealsCount: MockMarketplaceData.profile.dealsCount,
             daysOnPlatform: MockMarketplaceData.profile.daysOnPlatform
         )
+    }
+
+    func deleteAccount() async throws {
+        try await simulateLatency()
     }
 
     func requestProfileVerification(message: String?) async throws -> ProfileVerificationResponse {
@@ -136,7 +214,65 @@ struct MockMarketplaceService: MarketplaceServicing {
 
     func fetchProfileVerificationStatus() async throws -> ProfileVerificationResponse {
         try await simulateLatency()
-        return ProfileVerificationResponse(status: .approved, latestRequestId: "mock-verification", updatedAt: Date())
+        return ProfileVerificationResponse(status: .notStarted, latestRequestId: nil, updatedAt: nil)
+    }
+
+    func fetchNotificationPreferences() async throws -> NotificationPreferences {
+        try await simulateLatency()
+        return MockMarketplaceData.notificationPreferences
+    }
+
+    func updateNotificationPreferences(_ preferences: NotificationPreferences) async throws -> NotificationPreferences {
+        try await simulateLatency()
+        var updated = preferences
+        updated.updatedAt = Date()
+        return updated
+    }
+
+    func registerPushDevice(token: String, deviceID: String, environment: PushEnvironment) async throws -> PushDevice {
+        try await simulateLatency()
+        return PushDevice(id: "push-\(deviceID)", deviceID: deviceID, environment: environment, enabled: true)
+    }
+
+    func unregisterPushDevice(deviceID: String) async throws -> PushDevice {
+        try await simulateLatency()
+        return PushDevice(id: "push-\(deviceID)", deviceID: deviceID, environment: .sandbox, enabled: false)
+    }
+
+    func fetchBlockedUsers() async throws -> [BlockedUser] {
+        try await simulateLatency()
+        return []
+    }
+
+    func blockUser(userID: String) async throws {
+        try await simulateLatency()
+    }
+
+    func unblockUser(userID: String) async throws {
+        try await simulateLatency()
+    }
+
+    func report(targetType: ReportTargetType, targetID: String, draft: ReportDraft) async throws -> ReportResponse {
+        try await simulateLatency()
+        return ReportResponse(
+            id: "report-\(UUID().uuidString)",
+            targetType: targetType,
+            targetID: targetID,
+            reason: draft.reason.title,
+            details: draft.details.trimmingCharacters(in: .whitespacesAndNewlines),
+            status: .open,
+            createdAt: Date(),
+            updatedAt: Date()
+        )
+    }
+
+    func reportListing(id: String, draft: ListingReportDraft) async throws -> ReportResponse {
+        try await report(targetType: .listing, targetID: id, draft: draft)
+    }
+
+    func fetchMyReports() async throws -> [ReportResponse] {
+        try await simulateLatency()
+        return MockMarketplaceData.reports
     }
 
     func requestShelterHelp(_ request: ShelterHelpRequest) async throws {
@@ -154,9 +290,11 @@ struct MockMarketplaceService: MarketplaceServicing {
             time: String(localized: "chat_now"),
             unreadCount: 0,
             listingTitle: String(localized: "petsitting_title"),
+            otherParticipantID: request.petSitterID,
             messages: [
                 ChatMessage(
                     id: "message-\(UUID().uuidString)",
+                    senderID: "tester@example.com",
                     text: request.message,
                     sender: .me,
                     time: String(localized: "chat_now")
@@ -332,6 +470,89 @@ enum MockMarketplaceData {
         )
     ]
 
+    static let myListings: [Listing] = [
+        Listing(
+            id: "mine-pending",
+            ownerID: "mock-user",
+            category: .rehome,
+            status: .pending,
+            title: "Мурка ищет дом",
+            animalType: .cat,
+            breed: "Беспородная",
+            age: "8 месяцев",
+            sex: .female,
+            location: "Липецк, Центр",
+            imageURL: url("https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&h=600&fit=crop&auto=format"),
+            description: "Ласковая кошка, приучена к лотку. Публикация ожидает проверки модератором.",
+            authorName: profile.name,
+            authorAvatarURL: profile.avatarURL,
+            date: "Сегодня, 12:10",
+            tags: ["Лоток", "Ласковая"],
+            isUrgent: false,
+            pricePerDay: nil
+        ),
+        Listing(
+            id: "mine-active",
+            ownerID: "mock-user",
+            category: .boardingOffer,
+            status: .active,
+            title: "Передержка для кошек",
+            animalType: .cat,
+            breed: "Любая",
+            age: "Любой возраст",
+            sex: .female,
+            location: "Липецк, Сокол",
+            imageURL: url("https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=600&h=600&fit=crop&auto=format"),
+            description: "Принимаю спокойных кошек на короткую передержку.",
+            authorName: profile.name,
+            authorAvatarURL: profile.avatarURL,
+            date: "Вчера, 17:30",
+            tags: ["Передержка", "Фотоотчеты"],
+            isUrgent: false,
+            pricePerDay: 700
+        ),
+        Listing(
+            id: "mine-rejected",
+            ownerID: "mock-user",
+            category: .lost,
+            status: .rejected,
+            title: "Потерялся попугай",
+            animalType: .bird,
+            breed: "Волнистый",
+            age: "1 год",
+            sex: .male,
+            location: "Липецк, Сырский",
+            imageURL: nil,
+            description: "Нужно добавить фото и точное место, чтобы публикация прошла модерацию.",
+            authorName: profile.name,
+            authorAvatarURL: profile.avatarURL,
+            date: "2 дня назад",
+            tags: ["Нужно исправить"],
+            isUrgent: true,
+            pricePerDay: nil
+        ),
+        Listing(
+            id: "mine-closed",
+            ownerID: "mock-user",
+            category: .found,
+            status: .closed,
+            title: "Хозяин найден",
+            animalType: .dog,
+            breed: "Метис",
+            age: "3 года",
+            sex: .male,
+            location: "Липецк, Университетский",
+            imageURL: nil,
+            description: "Публикация закрыта владельцем.",
+            authorName: profile.name,
+            authorAvatarURL: profile.avatarURL,
+            date: "Неделю назад",
+            tags: ["Закрыто"],
+            isUrgent: false,
+            pricePerDay: nil
+        )
+    ]
+
     static let shelters: [Shelter] = [
         Shelter(
             id: "s1",
@@ -413,11 +634,12 @@ enum MockMarketplaceData {
             time: "14:35",
             unreadCount: 2,
             listingTitle: "Бадди ищет дом",
+            otherParticipantID: "mock-user-anna",
             messages: [
-                ChatMessage(id: "m1", text: "Здравствуйте! Увидела объявление о Бадди.", sender: .me, time: "13:10"),
-                ChatMessage(id: "m2", text: "Здравствуйте! Бадди замечательный пес.", sender: .them, time: "13:25"),
-                ChatMessage(id: "m3", text: "Можно ли приехать посмотреть?", sender: .me, time: "14:20"),
-                ChatMessage(id: "m4", text: "Да, можно приехать посмотреть в субботу", sender: .them, time: "14:35")
+                ChatMessage(id: "m1", senderID: "tester@example.com", text: "Здравствуйте! Увидела объявление о Бадди.", sender: .me, time: "13:10"),
+                ChatMessage(id: "m2", senderID: "mock-user-anna", text: "Здравствуйте! Бадди замечательный пес.", sender: .them, time: "13:25"),
+                ChatMessage(id: "m3", senderID: "tester@example.com", text: "Можно ли приехать посмотреть?", sender: .me, time: "14:20"),
+                ChatMessage(id: "m4", senderID: "mock-user-anna", text: "Да, можно приехать посмотреть в субботу", sender: .them, time: "14:35")
             ]
         ),
         Conversation(
@@ -428,12 +650,43 @@ enum MockMarketplaceData {
             time: "Вчера",
             unreadCount: 0,
             listingTitle: "Потерялась Луна",
+            otherParticipantID: "mock-user-dmitry",
             messages: [
-                ChatMessage(id: "m5", text: "Видел серую кошку около Гавани.", sender: .me, time: "Вчера, 11:00"),
-                ChatMessage(id: "m6", text: "Спасибо! Можете прислать фото?", sender: .them, time: "Вчера, 11:15")
+                ChatMessage(id: "m5", senderID: "tester@example.com", text: "Видел серую кошку около Гавани.", sender: .me, time: "Вчера, 11:00"),
+                ChatMessage(id: "m6", senderID: "mock-user-dmitry", text: "Спасибо! Можете прислать фото?", sender: .them, time: "Вчера, 11:15")
             ]
         )
     ]
+
+    static let reports: [ReportResponse] = [
+        ReportResponse(
+            id: "report-open",
+            targetType: .listing,
+            targetID: "2",
+            reason: ReportReason.fraud.title,
+            details: "Пользователь просит перевести деньги вне Fluffy.",
+            status: .reviewing,
+            createdAt: Date().addingTimeInterval(-86_400),
+            updatedAt: Date().addingTimeInterval(-3_600)
+        ),
+        ReportResponse(
+            id: "report-resolved",
+            targetType: .listing,
+            targetID: "7",
+            reason: ReportReason.wrongCategory.title,
+            details: nil,
+            status: .resolved,
+            createdAt: Date().addingTimeInterval(-172_800),
+            updatedAt: Date().addingTimeInterval(-120_000)
+        )
+    ]
+
+    static let notificationPreferences = NotificationPreferences(
+        replies: true,
+        moderation: true,
+        safety: true,
+        updatedAt: Date().addingTimeInterval(-3_600)
+    )
 
     static let profile = UserProfile(
         name: "Мария Соколова",
@@ -442,6 +695,7 @@ enum MockMarketplaceData {
         email: "maria@example.com",
         phone: "+7 900 123-45-67",
         avatarURL: url("https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&fit=crop&auto=format"),
+        verificationStatus: .notStarted,
         rating: 4.9,
         reviews: 12,
         listingsCount: 2,

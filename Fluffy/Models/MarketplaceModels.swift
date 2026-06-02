@@ -465,6 +465,25 @@ struct ProfileVerificationResponse: Hashable {
     let updatedAt: Date?
 }
 
+struct NotificationPreferences: Hashable, Codable {
+    var replies: Bool = true
+    var moderation: Bool = true
+    var safety: Bool = true
+    var updatedAt: Date? = nil
+}
+
+enum PushEnvironment: String, Hashable, Codable {
+    case sandbox
+    case production
+}
+
+struct PushDevice: Hashable, Codable {
+    let id: String
+    let deviceID: String
+    let environment: PushEnvironment
+    let enabled: Bool
+}
+
 struct ShelterHelpRequest: Hashable {
     let shelterID: String
     let message: String
@@ -473,6 +492,126 @@ struct ShelterHelpRequest: Hashable {
 struct PetSitterContactRequest: Hashable {
     let petSitterID: String
     let message: String
+}
+
+enum ReportReason: String, CaseIterable, Identifiable, Hashable, Codable {
+    case spam
+    case fraud
+    case inappropriate
+    case wrongCategory
+    case unsafe
+    case other
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .spam: "Спам"
+        case .fraud: "Мошенничество"
+        case .inappropriate: "Неподходящий контент"
+        case .wrongCategory: "Неверная категория"
+        case .unsafe: "Опасная ситуация"
+        case .other: "Другое"
+        }
+    }
+}
+
+struct ReportDraft: Hashable {
+    var reason: ReportReason = .spam
+    var details = ""
+
+    var isValid: Bool {
+        reason != .other || !details.trimmed.isEmpty
+    }
+}
+
+typealias ListingReportDraft = ReportDraft
+
+struct ReportTarget: Identifiable, Hashable {
+    let type: ReportTargetType
+    let id: String
+    let title: String
+    let subtitle: String
+
+    var sheetID: String {
+        "\(type.rawValue)-\(id)"
+    }
+
+    var successMessage: String {
+        switch type {
+        case .listing:
+            "Спасибо. Модераторы проверят объявление и примут решение."
+        case .user:
+            "Спасибо. Модераторы проверят профиль и историю действий."
+        case .message:
+            "Спасибо. Модераторы проверят сообщение и контекст переписки."
+        }
+    }
+}
+
+enum ReportTargetType: String, Hashable, Codable {
+    case listing
+    case user
+    case message
+
+    var title: String {
+        switch self {
+        case .listing: "Объявление"
+        case .user: "Пользователь"
+        case .message: "Сообщение"
+        }
+    }
+}
+
+enum ReportStatus: String, Hashable, Codable {
+    case open
+    case reviewing
+    case reviewed
+    case dismissed
+    case resolved
+    case rejected
+
+    var title: String {
+        switch self {
+        case .open: "Открыто"
+        case .reviewing: "На проверке"
+        case .reviewed: "Проверено"
+        case .dismissed: "Отклонено"
+        case .resolved: "Решено"
+        case .rejected: "Отклонено"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .open: "tray.fill"
+        case .reviewing: "clock.fill"
+        case .reviewed: "checkmark.circle.fill"
+        case .dismissed: "xmark.circle.fill"
+        case .resolved: "checkmark.shield.fill"
+        case .rejected: "exclamationmark.triangle.fill"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .open: AppTheme.accent
+        case .reviewing: .orange
+        case .reviewed, .resolved: AppTheme.success
+        case .dismissed, .rejected: AppTheme.danger
+        }
+    }
+}
+
+struct ReportResponse: Hashable {
+    let id: String
+    let targetType: ReportTargetType
+    let targetID: String
+    let reason: String
+    let details: String?
+    let status: ReportStatus
+    let createdAt: Date?
+    let updatedAt: Date?
 }
 
 enum ListingCategory: String, CaseIterable, Identifiable, Hashable {
@@ -574,9 +713,59 @@ enum PetSex: String, CaseIterable, Identifiable, Hashable {
     }
 }
 
+enum ListingStatus: String, CaseIterable, Identifiable, Hashable, Codable {
+    case draft
+    case pending
+    case active
+    case rejected
+    case hidden
+    case closed
+    case deleted
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .draft: "Черновик"
+        case .pending: "На модерации"
+        case .active: "Активно"
+        case .rejected: "Отклонено"
+        case .hidden: "Скрыто"
+        case .closed: "Закрыто"
+        case .deleted: "Удалено"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .draft: "doc.text"
+        case .pending: "clock.fill"
+        case .active: "checkmark.circle.fill"
+        case .rejected: "exclamationmark.triangle.fill"
+        case .hidden: "eye.slash.fill"
+        case .closed: "archivebox.fill"
+        case .deleted: "trash.fill"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .draft: AppTheme.secondaryText
+        case .pending: .orange
+        case .active: AppTheme.accent
+        case .rejected: .red
+        case .hidden: .gray
+        case .closed: .blue
+        case .deleted: .red
+        }
+    }
+}
+
 struct Listing: Identifiable, Hashable {
     let id: String
+    let ownerID: String?
     let category: ListingCategory
+    let status: ListingStatus
     let title: String
     let animalType: AnimalType
     let breed: String
@@ -591,12 +780,15 @@ struct Listing: Identifiable, Hashable {
     let tags: [String]
     let isUrgent: Bool
     let pricePerDay: Int?
+    let reward: Int?
     var isFavorite: Bool = false
     let distance: Double?
 
     init(
         id: String,
+        ownerID: String? = nil,
         category: ListingCategory,
+        status: ListingStatus = .active,
         title: String,
         animalType: AnimalType,
         breed: String,
@@ -611,11 +803,14 @@ struct Listing: Identifiable, Hashable {
         tags: [String],
         isUrgent: Bool,
         pricePerDay: Int?,
+        reward: Int? = nil,
         isFavorite: Bool = false,
         distance: Double? = nil
     ) {
         self.id = id
+        self.ownerID = ownerID
         self.category = category
+        self.status = status
         self.title = title
         self.animalType = animalType
         self.breed = breed
@@ -630,6 +825,7 @@ struct Listing: Identifiable, Hashable {
         self.tags = tags
         self.isUrgent = isUrgent
         self.pricePerDay = pricePerDay
+        self.reward = reward
         self.isFavorite = isFavorite
         self.distance = distance
     }
@@ -645,6 +841,32 @@ struct Listing: Identifiable, Hashable {
         } else {
             return String(format: "%.1f км", distance / 1000.0)
         }
+    }
+
+    var canReceiveMessages: Bool {
+        status == .active
+    }
+}
+
+struct ListingEditDraft: Hashable {
+    var title: String
+    var description: String
+    var location: String
+    var isUrgent: Bool
+    var pricePerDay: Int?
+
+    init(listing: Listing) {
+        self.title = listing.title
+        self.description = listing.description
+        self.location = listing.location
+        self.isUrgent = listing.isUrgent
+        self.pricePerDay = listing.pricePerDay
+    }
+
+    var isValid: Bool {
+        !title.trimmed.isEmpty
+            && !description.trimmed.isEmpty
+            && !location.trimmed.isEmpty
     }
 }
 
@@ -679,6 +901,7 @@ struct ChatMessage: Identifiable, Hashable {
     }
 
     let id: String
+    let senderID: String?
     let text: String
     let sender: Sender
     let time: String
@@ -692,6 +915,7 @@ struct Conversation: Identifiable, Hashable {
     var time: String
     var unreadCount: Int
     let listingTitle: String
+    let otherParticipantID: String?
     var messages: [ChatMessage]
 }
 
@@ -702,6 +926,7 @@ struct UserProfile: Hashable {
     let email: String
     let phone: String
     let avatarURL: URL?
+    let verificationStatus: VerificationStatus
     let rating: Double
     let reviews: Int
     let listingsCount: Int
@@ -711,4 +936,13 @@ struct UserProfile: Hashable {
     var draft: UserProfileDraft {
         UserProfileDraft(name: name, handle: handle, city: city, phone: phone, avatarURL: avatarURL)
     }
+}
+
+struct BlockedUser: Identifiable, Hashable {
+    let id: String
+    let userID: String
+    let name: String
+    let handle: String?
+    let avatarURL: URL?
+    let createdAt: Date?
 }

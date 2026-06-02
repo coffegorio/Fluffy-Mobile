@@ -10,6 +10,8 @@ struct ListingDetailView: View {
 
     let viewModel: MainViewModel
     let listing: Listing
+    @State private var isCloseDialogPresented = false
+    @State private var isDeleteDialogPresented = false
 
     var body: some View {
         ScrollView {
@@ -22,6 +24,20 @@ struct ListingDetailView: View {
         .background(AppTheme.background)
         .ignoresSafeArea(edges: .top)
         .navigationBarBackButtonHidden()
+        .confirmationDialog("Закрыть объявление?", isPresented: $isCloseDialogPresented) {
+            Button("Закрыть", role: .destructive) {
+                viewModel.closeListing(listing)
+            }
+        } message: {
+            Text("Оно останется в истории, но перестанет принимать отклики.")
+        }
+        .confirmationDialog("Удалить объявление?", isPresented: $isDeleteDialogPresented) {
+            Button("Удалить", role: .destructive) {
+                viewModel.deleteListing(listing)
+            }
+        } message: {
+            Text("Это действие нельзя отменить.")
+        }
     }
 
     private var hero: some View {
@@ -51,10 +67,12 @@ struct ListingDetailView: View {
 
                 Spacer()
 
-                FavoriteButton(
-                    isFavorite: viewModel.isFavorite(listing),
-                    action: { viewModel.toggleFavorite(listing) }
-                )
+                if !viewModel.isOwnListing(listing) {
+                    FavoriteButton(
+                        isFavorite: viewModel.isFavorite(listing),
+                        action: { viewModel.toggleFavorite(listing) }
+                    )
+                }
             }
             .padding(.horizontal, 16)
             .padding(.top, 58)
@@ -71,6 +89,7 @@ struct ListingDetailView: View {
 
                     HStack {
                         ListingBadge(category: listing.category)
+                        ListingStatusBadge(status: listing.status)
 
                         if let price = listing.pricePerDay {
                             Text("\(price) ₽ \(String(localized: "common_per_day"))")
@@ -93,7 +112,7 @@ struct ListingDetailView: View {
             description
             location
             author
-            messageButton
+            actionArea
         }
         .padding(16)
         .padding(.top, 4)
@@ -166,6 +185,73 @@ struct ListingDetailView: View {
         .background(AppTheme.surface.opacity(0.70), in: RoundedRectangle(cornerRadius: AppTheme.cardRadius))
         .fluffyGlass(cornerRadius: AppTheme.cardRadius, tint: .white.opacity(0.12))
         .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+    }
+
+    @ViewBuilder
+    private var actionArea: some View {
+        if viewModel.isOwnListing(listing) {
+            ownerActions
+        } else {
+            VStack(spacing: 10) {
+                if listing.canReceiveMessages {
+                    messageButton
+                } else {
+                    Text("Объявление сейчас не принимает отклики.")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AppTheme.muted, in: RoundedRectangle(cornerRadius: AppTheme.compactRadius))
+                }
+
+                Button(role: .destructive) {
+                    viewModel.showReportListing(listing)
+                } label: {
+                    Label("Пожаловаться", systemImage: "flag")
+                        .font(.system(size: 14, weight: .heavy))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+    }
+
+    private var ownerActions: some View {
+        VStack(spacing: 10) {
+            Button {
+                viewModel.showEditListing(listing)
+            } label: {
+                Label("Редактировать", systemImage: "pencil")
+                    .font(.system(size: 16, weight: .heavy))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(AppTheme.accent, in: RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+            }
+            .buttonStyle(.plain)
+            .disabled(listing.status == .deleted)
+
+            HStack(spacing: 10) {
+                Button {
+                    isCloseDialogPresented = true
+                } label: {
+                    Label("Закрыть", systemImage: "archivebox")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .disabled(listing.status == .closed || listing.status == .deleted)
+
+                Button(role: .destructive) {
+                    isDeleteDialogPresented = true
+                } label: {
+                    Label("Удалить", systemImage: "trash")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .disabled(listing.status == .deleted)
+            }
+            .font(.system(size: 14, weight: .heavy))
+        }
     }
 
     private var messageButton: some View {

@@ -6,6 +6,7 @@
 //
 
 enum AppRoot {
+    case launching
     case welcome
     case auth
     case profileCompletion

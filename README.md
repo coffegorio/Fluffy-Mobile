@@ -88,7 +88,7 @@ The auth service calls:
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
 
-Debug builds default to `http://127.0.0.1:8080`, which works with the iOS simulator when the Vapor backend runs on the same Mac. Release builds default to `https://api.fluffy-infra.ru`. Override either with `-APIBaseURL` or the `FLUFFY_API_BASE_URL` environment variable. UI tests continue to use `MockAuthService` through existing `-UITestAuthEmail` launch arguments.
+Debug builds default to `http://127.0.0.1:8080`, which works with the iOS simulator when the Vapor backend runs on the same Mac. Release builds default to `https://api.fluffy-pet.ru`. Override either with `-APIBaseURL` or the `FLUFFY_API_BASE_URL` environment variable. UI tests continue to use `MockAuthService` through existing `-UITestAuthEmail` launch arguments.
 
 Marketplace screens call real backend endpoints:
 

@@ -1402,7 +1402,7 @@ struct ProfileActionSheet: View {
                 message: "Сохраняйте переписку в чате Fluffy. Она помогает модераторам понять контекст."
             )
 
-            Link(destination: URL(string: "mailto:support@fluffy-infra.ru")!) {
+            Link(destination: URL(string: "mailto:support@fluffy-pet.ru")!) {
                 Label("Написать в поддержку", systemImage: "envelope.fill")
                     .font(.system(size: 15, weight: .heavy))
                     .frame(maxWidth: .infinity)

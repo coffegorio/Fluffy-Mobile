@@ -22,7 +22,7 @@ struct APIConfiguration {
         #if DEBUG
         return APIConfiguration(baseURL: URL(string: "http://127.0.0.1:8080")!)
         #else
-        return APIConfiguration(baseURL: URL(string: "https://api.fluffy-infra.ru")!)
+        return APIConfiguration(baseURL: URL(string: "https://api.fluffy-pet.ru")!)
         #endif
     }
 }

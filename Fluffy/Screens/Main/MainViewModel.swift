@@ -588,8 +588,13 @@ final class MainViewModel {
             favoriteListingIDs.remove(listing.id)
             upsertMyListing(listing)
             selectedTab = .profile
-            activeSheet = nil
             path.append(.myListings)
+            activeSheet = .status(
+                title: "Отправлено на модерацию",
+                message: listing.isUrgent
+                    ? "Срочное объявление отправлено модераторам в приоритетном порядке. Обычно это занимает меньше времени, чем проверка стандартных объявлений."
+                    : "Модераторы проверят объявление, и оно появится в ленте после одобрения. Статус можно отслеживать в разделе «Мои объявления»."
+            )
         }
     }
 

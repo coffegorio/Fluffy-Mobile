@@ -45,6 +45,9 @@ struct APIMarketplaceService: MarketplaceServicing {
         if let rad = query.radius {
             queryItems.append(URLQueryItem(name: "radius", value: "\(rad)"))
         }
+        if let citySlug = query.citySlug {
+            queryItems.append(URLQueryItem(name: "citySlug", value: citySlug))
+        }
 
         let page: BackendPage<BackendListingResponse> = try await client.get(
             "/api/v1/listings",
@@ -62,24 +65,32 @@ struct APIMarketplaceService: MarketplaceServicing {
         return MarketplacePage(items: items, page: page.page, pageSize: page.pageSize, hasMore: page.hasMore)
     }
 
-    func fetchShelters() async throws -> [Shelter] {
+    func fetchShelters(citySlug: String?) async throws -> [Shelter] {
+        var queryItems = [
+            URLQueryItem(name: "page", value: "1"),
+            URLQueryItem(name: "pageSize", value: "50")
+        ]
+        if let citySlug {
+            queryItems.append(URLQueryItem(name: "citySlug", value: citySlug))
+        }
         let page: BackendPage<BackendShelterResponse> = try await client.get(
             "/api/v1/shelters",
-            queryItems: [
-                URLQueryItem(name: "page", value: "1"),
-                URLQueryItem(name: "pageSize", value: "50")
-            ]
+            queryItems: queryItems
         )
         return page.items.map(\.shelter)
     }
 
-    func fetchPetSitters() async throws -> [PetSitter] {
+    func fetchPetSitters(citySlug: String?) async throws -> [PetSitter] {
+        var queryItems = [
+            URLQueryItem(name: "page", value: "1"),
+            URLQueryItem(name: "pageSize", value: "50")
+        ]
+        if let citySlug {
+            queryItems.append(URLQueryItem(name: "citySlug", value: citySlug))
+        }
         let page: BackendPage<BackendPetSitterResponse> = try await client.get(
             "/api/v1/pet-sitters",
-            queryItems: [
-                URLQueryItem(name: "page", value: "1"),
-                URLQueryItem(name: "pageSize", value: "50")
-            ]
+            queryItems: queryItems
         )
         return page.items.map(\.petSitter)
     }
@@ -480,6 +491,7 @@ private struct ProfileUpdateRequest: Encodable {
     let name: String
     let handle: String?
     let city: String
+    let citySlug: String?
     let phone: String
     let avatarUrl: String?
 
@@ -488,6 +500,7 @@ private struct ProfileUpdateRequest: Encodable {
         let trimmedHandle = draft.handle.trimmingCharacters(in: .whitespacesAndNewlines)
         self.handle = trimmedHandle.isEmpty ? nil : trimmedHandle
         self.city = draft.city.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.citySlug = draft.citySlug
         self.phone = draft.phone.trimmingCharacters(in: .whitespacesAndNewlines)
         self.avatarUrl = draft.avatarURL?.absoluteString
     }
@@ -615,6 +628,7 @@ private struct BackendProfileResponse: Decodable {
     let name: String?
     let handle: String?
     let city: String?
+    let citySlug: String?
     let phone: String?
     let avatarUrl: String?
     let avatarURL: String?
@@ -629,6 +643,7 @@ private struct BackendProfileResponse: Decodable {
             name: clean(name, fallback: email.components(separatedBy: "@").first ?? "Fluffy"),
             handle: clean(handle, fallback: "@fluffy"),
             city: clean(city, fallback: ""),
+            citySlug: citySlug,
             email: email,
             phone: clean(phone, fallback: ""),
             avatarURL: URL(string: avatarURL ?? avatarUrl ?? ""),

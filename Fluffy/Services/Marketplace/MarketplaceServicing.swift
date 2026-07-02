@@ -5,8 +5,8 @@
 
 protocol MarketplaceServicing {
     func fetchListings(query: ListingQuery) async throws -> MarketplacePage<Listing>
-    func fetchShelters() async throws -> [Shelter]
-    func fetchPetSitters() async throws -> [PetSitter]
+    func fetchShelters(citySlug: String?) async throws -> [Shelter]
+    func fetchPetSitters(citySlug: String?) async throws -> [PetSitter]
     func fetchConversations() async throws -> [Conversation]
     func fetchMessages(conversationID: String) async throws -> [ChatMessage]
     func fetchUserProfile() async throws -> UserProfile

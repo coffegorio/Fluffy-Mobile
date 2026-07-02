@@ -29,12 +29,20 @@ struct AddListingSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var step: Step = .scenario
-    @State private var draft = ListingDraft()
+    @State private var draft: ListingDraft
     @State private var priceText = ""
     @State private var rewardText = ""
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var previewImage: UIImage?
     @FocusState private var isFieldFocused: Bool
+
+    init(initialCity: String = "", isSaving: Bool, onSubmit: @escaping (ListingDraft) async -> Void) {
+        self.isSaving = isSaving
+        self.onSubmit = onSubmit
+        var draft = ListingDraft()
+        draft.city = initialCity
+        _draft = State(initialValue: draft)
+    }
 
     var body: some View {
         NavigationStack {

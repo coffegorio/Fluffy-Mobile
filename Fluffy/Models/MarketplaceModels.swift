@@ -21,14 +21,16 @@ struct ListingQuery: Hashable {
     var latitude: Double? = nil
     var longitude: Double? = nil
     var radius: Double? = nil
+    var citySlug: String? = nil
 
     static let firstPage = ListingQuery(
         category: nil,
         searchText: "",
         page: 1,
         pageSize: 20,
-        latitude: 52.60,
-        longitude: 39.57
+        latitude: CityCatalog.defaultCity.latitude,
+        longitude: CityCatalog.defaultCity.longitude,
+        citySlug: CityCatalog.defaultCity.slug
     )
 }
 
@@ -450,6 +452,7 @@ struct UserProfileDraft: Hashable {
     var name: String
     var handle: String
     var city: String
+    var citySlug: String? = nil
     var phone: String
     var avatarURL: URL?
 
@@ -923,6 +926,7 @@ struct UserProfile: Hashable {
     let name: String
     let handle: String
     let city: String
+    let citySlug: String?
     let email: String
     let phone: String
     let avatarURL: URL?
@@ -934,7 +938,7 @@ struct UserProfile: Hashable {
     let daysOnPlatform: Int
 
     var draft: UserProfileDraft {
-        UserProfileDraft(name: name, handle: handle, city: city, phone: phone, avatarURL: avatarURL)
+        UserProfileDraft(name: name, handle: handle, city: city, citySlug: citySlug, phone: phone, avatarURL: avatarURL)
     }
 }
 

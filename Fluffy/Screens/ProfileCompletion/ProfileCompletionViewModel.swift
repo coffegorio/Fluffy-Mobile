@@ -15,7 +15,8 @@ protocol ProfileCompletionCoordinating: AnyObject {
 @Observable
 final class ProfileCompletionViewModel {
     var name = ""
-    var city = "Липецк"
+    var cities: [City] = CityCatalog.fallback
+    var selectedCity: City = CityCatalog.defaultCity
     var phone = ""
     var avatarImage: UIImage?
     var avatarData: Data?
@@ -28,17 +29,20 @@ final class ProfileCompletionViewModel {
     private weak var coordinator: ProfileCompletionCoordinating?
     private let marketplaceService: MarketplaceServicing
     private let mediaService: MediaServicing
+    private let cityService: CityServicing
 
     init(
         session: AuthSession,
         coordinator: ProfileCompletionCoordinating?,
         marketplaceService: MarketplaceServicing,
-        mediaService: MediaServicing
+        mediaService: MediaServicing,
+        cityService: CityServicing
     ) {
         self.session = session
         self.coordinator = coordinator
         self.marketplaceService = marketplaceService
         self.mediaService = mediaService
+        self.cityService = cityService
     }
 
     var email: String {
@@ -47,9 +51,16 @@ final class ProfileCompletionViewModel {
 
     var isSaveEnabled: Bool {
         !trimmed(name).isEmpty
-            && !trimmed(city).isEmpty
             && normalizedRussianPhone != nil
             && !isSaving
+    }
+
+    func loadCities() async {
+        guard let fetched = try? await cityService.fetchCities(), !fetched.isEmpty else { return }
+        cities = fetched
+        if !fetched.contains(where: { $0.slug == selectedCity.slug }) {
+            selectedCity = fetched[0]
+        }
     }
 
     var phoneValidationMessage: String? {
@@ -93,7 +104,8 @@ final class ProfileCompletionViewModel {
             let draft = UserProfileDraft(
                 name: trimmed(name),
                 handle: "",
-                city: trimmed(city),
+                city: selectedCity.name,
+                citySlug: selectedCity.slug,
                 phone: normalizedRussianPhone ?? trimmed(phone),
                 avatarURL: uploadedAvatarURL
             )

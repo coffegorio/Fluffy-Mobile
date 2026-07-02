@@ -30,12 +30,12 @@ struct MockMarketplaceService: MarketplaceServicing {
         )
     }
 
-    func fetchShelters() async throws -> [Shelter] {
+    func fetchShelters(citySlug: String?) async throws -> [Shelter] {
         try await simulateLatency()
         return MockMarketplaceData.shelters
     }
 
-    func fetchPetSitters() async throws -> [PetSitter] {
+    func fetchPetSitters(citySlug: String?) async throws -> [PetSitter] {
         try await simulateLatency()
         return MockMarketplaceData.petSitters
     }
@@ -191,6 +191,7 @@ struct MockMarketplaceService: MarketplaceServicing {
             name: draft.name.trimmingCharacters(in: .whitespacesAndNewlines),
             handle: draft.handle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "@fluffy" : draft.handle,
             city: draft.city.trimmingCharacters(in: .whitespacesAndNewlines),
+            citySlug: draft.citySlug ?? MockMarketplaceData.profile.citySlug,
             email: MockMarketplaceData.profile.email,
             phone: draft.phone.trimmingCharacters(in: .whitespacesAndNewlines),
             avatarURL: draft.avatarURL ?? MockMarketplaceData.profile.avatarURL,
@@ -692,6 +693,7 @@ enum MockMarketplaceData {
         name: "Мария Соколова",
         handle: "@msokolova",
         city: "Липецк",
+        citySlug: "lipetsk",
         email: "maria@example.com",
         phone: "+7 900 123-45-67",
         avatarURL: url("https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&fit=crop&auto=format"),

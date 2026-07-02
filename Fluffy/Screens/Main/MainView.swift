@@ -119,7 +119,7 @@ struct MainView: View {
     private func sheetView(for sheet: MarketplaceSheet) -> some View {
         switch sheet {
         case .addListing:
-            AddListingSheet(isSaving: viewModel.isPerformingAction) { draft in
+            AddListingSheet(initialCity: viewModel.selectedCity.name, isSaving: viewModel.isPerformingAction) { draft in
                 await viewModel.createListing(from: draft)
             }
         case let .editListing(listing):

@@ -104,6 +104,8 @@ final class MainViewModel {
     var blockedUsers: [BlockedUser] = []
     var mapMarkers: [MapMarker] = []
     var selectedMapFilters: Set<MapMarkerKind> = Set(MapMarkerKind.allCases)
+    var cities: [City] = CityCatalog.fallback
+    var selectedCity: City
     var favoriteListingIDs: Set<String> = []
     var searchText = ""
     var selectedCategory: ListingCategory = .all
@@ -117,6 +119,8 @@ final class MainViewModel {
     private let marketplaceService: MarketplaceServicing
     private let mapService: MapServicing
     private let mediaService: MediaServicing
+    private let cityService: CityServicing
+    private let citySelectionStore: CitySelectionStoring
     private let accessTokenProvider: AccessTokenProviding
     private let webSocketService = WebSocketService()
     private var loadedConversationMessageIDs: Set<String> = []
@@ -127,6 +131,8 @@ final class MainViewModel {
         marketplaceService: MarketplaceServicing,
         mapService: MapServicing,
         mediaService: MediaServicing,
+        cityService: CityServicing,
+        citySelectionStore: CitySelectionStoring,
         accessTokenProvider: AccessTokenProviding
     ) {
         self.session = session
@@ -134,7 +140,12 @@ final class MainViewModel {
         self.marketplaceService = marketplaceService
         self.mapService = mapService
         self.mediaService = mediaService
+        self.cityService = cityService
+        self.citySelectionStore = citySelectionStore
         self.accessTokenProvider = accessTokenProvider
+
+        let storedSlug = citySelectionStore.loadSelectedCitySlug()
+        self.selectedCity = CityCatalog.fallback.first { $0.slug == storedSlug } ?? CityCatalog.defaultCity
 
         #if DEBUG
         if let rawTab = ProcessInfo.processInfo.value(after: "-UITestInitialTab"),
@@ -240,16 +251,32 @@ final class MainViewModel {
         errorMessage = nil
 
         do {
-            async let listingsPage = marketplaceService.fetchListings(query: .firstPage)
-            async let shelters = marketplaceService.fetchShelters()
-            async let petSitters = marketplaceService.fetchPetSitters()
+            async let citiesResult = cityService.fetchCities()
+            async let profileResult = marketplaceService.fetchUserProfile()
+
+            let fetchedCities = (try? await citiesResult) ?? []
+            if !fetchedCities.isEmpty {
+                self.cities = fetchedCities
+            }
+            let fetchedProfile = try? await profileResult
+            self.profile = fetchedProfile
+
+            if citySelectionStore.loadSelectedCitySlug() == nil,
+               let profileCitySlug = fetchedProfile?.citySlug,
+               let matched = self.cities.first(where: { $0.slug == profileCitySlug }) {
+                selectedCity = matched
+                citySelectionStore.saveSelectedCitySlug(matched.slug)
+            }
+
+            async let listingsPage = marketplaceService.fetchListings(query: listingQuery(for: selectedCity))
+            async let shelters = marketplaceService.fetchShelters(citySlug: selectedCity.slug)
+            async let petSitters = marketplaceService.fetchPetSitters(citySlug: selectedCity.slug)
             async let conversations = marketplaceService.fetchConversations()
             async let myListings = marketplaceService.fetchMyListings()
             async let myReports = marketplaceService.fetchMyReports()
-            async let profile = marketplaceService.fetchUserProfile()
             async let profileVerification = marketplaceService.fetchProfileVerificationStatus()
             async let notificationPreferences = marketplaceService.fetchNotificationPreferences()
-            async let mapMarkers = mapService.fetchMarkers(in: .lipetsk, filters: selectedMapFilters)
+            async let mapMarkers = mapService.fetchMarkers(in: selectedCity.viewport, filters: selectedMapFilters)
 
             let page = try await listingsPage
             self.listings = page.items
@@ -260,7 +287,6 @@ final class MainViewModel {
             self.conversations = mergeConversationSummaries((try? await conversations) ?? [])
             self.myListings = (try? await myListings) ?? []
             self.myReports = (try? await myReports) ?? []
-            self.profile = try? await profile
             self.profileVerification = try? await profileVerification
             self.notificationPreferences = (try? await notificationPreferences) ?? NotificationPreferences()
             self.mapMarkers = (try? await mapMarkers) ?? []
@@ -342,8 +368,34 @@ final class MainViewModel {
         path.append(.map)
     }
 
+    func selectCity(_ city: City) async {
+        guard city.slug != selectedCity.slug else { return }
+        selectedCity = city
+        citySelectionStore.saveSelectedCitySlug(city.slug)
+        await performAction {
+            var draft = self.profile?.draft ?? UserProfileDraft(name: "", handle: "", city: city.name, citySlug: city.slug, phone: "", avatarURL: nil)
+            draft.city = city.name
+            draft.citySlug = city.slug
+            self.profile = try await self.marketplaceService.updateUserProfile(draft)
+        }
+        await load(force: true)
+        await loadMapMarkers(in: city.viewport)
+    }
+
+    private func listingQuery(for city: City) -> ListingQuery {
+        ListingQuery(
+            category: nil,
+            searchText: "",
+            page: 1,
+            pageSize: 20,
+            latitude: city.latitude,
+            longitude: city.longitude,
+            citySlug: city.slug
+        )
+    }
+
     func loadMapMarkers(in viewport: MapViewport? = nil) async {
-        let targetViewport = viewport ?? .lipetsk
+        let targetViewport = viewport ?? selectedCity.viewport
 
         do {
             mapMarkers = try await mapService.fetchMarkers(in: targetViewport, filters: selectedMapFilters)

@@ -33,7 +33,8 @@ struct ProfileCompletionView: View {
                         ProfileCompletionFormSection(
                             name: $viewModel.name,
                             country: viewModel.country,
-                            city: $viewModel.city,
+                            cities: viewModel.cities,
+                            selectedCity: $viewModel.selectedCity,
                             phone: $viewModel.phone,
                             phoneValidationMessage: viewModel.phoneValidationMessage,
                             focusedField: $focusedField
@@ -70,6 +71,9 @@ struct ProfileCompletionView: View {
             Task {
                 await loadPhoto(item)
             }
+        }
+        .task {
+            await viewModel.loadCities()
         }
     }
 
@@ -177,7 +181,8 @@ private struct ProfileCompletionAvatarSection: View {
 private struct ProfileCompletionFormSection: View {
     @Binding var name: String
     let country: String
-    @Binding var city: String
+    let cities: [City]
+    @Binding var selectedCity: City
     @Binding var phone: String
     let phoneValidationMessage: String?
     var focusedField: FocusState<ProfileCompletionFocusedField?>.Binding
@@ -206,16 +211,10 @@ private struct ProfileCompletionFormSection: View {
                 badge: "Выбрано"
             )
 
-            ProfileCompletionTextField(
-                label: "Город",
-                placeholder: "Москва",
-                icon: "mappin",
-                isRequired: true,
-                textInputAutocapitalization: .words,
-                accessibilityIdentifier: "profile_completion_city_field",
-                text: $city
+            ProfileCompletionCityPicker(
+                cities: cities,
+                selectedCity: $selectedCity
             )
-            .focused(focusedField, equals: .city)
 
             ProfileCompletionTextField(
                 label: "Телефон",
@@ -272,6 +271,53 @@ private struct ProfileCompletionTextField: View {
             .frame(height: 54)
             .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: ProfileCompletionLayout.controlRadius, style: .continuous))
             .shadow(color: .black.opacity(0.035), radius: 12, x: 0, y: 6)
+        }
+    }
+}
+
+private struct ProfileCompletionCityPicker: View {
+    let cities: [City]
+    @Binding var selectedCity: City
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ProfileCompletionLabel(text: "Город", isRequired: true)
+
+            Menu {
+                ForEach(cities) { city in
+                    Button {
+                        selectedCity = city
+                    } label: {
+                        if city.slug == selectedCity.slug {
+                            Label(city.name, systemImage: "checkmark")
+                        } else {
+                            Text(city.name)
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 10) {
+                    Text(selectedCity.name)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(AppTheme.text)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(AppTheme.secondaryText.opacity(0.72))
+
+                    Image(systemName: "mappin")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(AppTheme.secondaryText.opacity(0.72))
+                        .frame(width: 20, height: 20)
+                }
+                .padding(.horizontal, 16)
+                .frame(height: 54)
+                .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: ProfileCompletionLayout.controlRadius, style: .continuous))
+                .shadow(color: .black.opacity(0.035), radius: 12, x: 0, y: 6)
+            }
+            .accessibilityIdentifier("profile_completion_city_field")
         }
     }
 }
@@ -410,7 +456,6 @@ private enum ProfileCompletionPalette {
 
 private enum ProfileCompletionFocusedField: Hashable {
     case name
-    case city
     case phone
 }
 
@@ -428,7 +473,8 @@ private enum ProfileCompletionFocusedField: Hashable {
             ),
             coordinator: nil,
             marketplaceService: MockMarketplaceService(),
-            mediaService: MockMediaService()
+            mediaService: MockMediaService(),
+            cityService: MockCityService()
         )
     )
 }

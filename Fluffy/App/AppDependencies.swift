@@ -13,6 +13,8 @@ struct AppDependencies {
     let marketplaceService: MarketplaceServicing
     let mapService: MapServicing
     let mediaService: MediaServicing
+    let cityService: CityServicing
+    let citySelectionStore: CitySelectionStoring
     let accessTokenProvider: AccessTokenProviding
 
     static var live: AppDependencies {
@@ -25,6 +27,8 @@ struct AppDependencies {
                 marketplaceService: MockMarketplaceService(),
                 mapService: MockMapService(),
                 mediaService: MockMediaService(),
+                cityService: MockCityService(),
+                citySelectionStore: UserDefaultsCitySelectionStore(),
                 accessTokenProvider: AuthenticatedAPIClient(
                     client: APIClient(configuration: .live),
                     sessionStore: KeychainAuthSessionStore(),
@@ -53,6 +57,8 @@ struct AppDependencies {
             ),
             mapService: APIMapService(client: apiClient),
             mediaService: APIMediaService(client: apiClient, authenticatedClient: authenticatedClient),
+            cityService: APICityService(client: apiClient),
+            citySelectionStore: UserDefaultsCitySelectionStore(),
             accessTokenProvider: authenticatedClient
         )
     }

@@ -7,6 +7,7 @@ import SwiftUI
 
 struct MarketplaceHomeView: View {
     let viewModel: MainViewModel
+    @State private var isCityPickerPresented = false
 
     var body: some View {
         ScrollView {
@@ -68,13 +69,30 @@ struct MarketplaceHomeView: View {
             await viewModel.refresh()
         }
         .background(AppTheme.background)
+        .sheet(isPresented: $isCityPickerPresented) {
+            CityPickerSheet(cities: viewModel.cities, selectedCity: viewModel.selectedCity) { city in
+                Task { await viewModel.selectCity(city) }
+            }
+        }
     }
 
     private var header: some View {
         HStack {
-            Label("Липецк", systemImage: "mappin.and.ellipse")
-                .font(.system(size: 20, weight: .heavy))
-                .foregroundStyle(AppTheme.text)
+            Button {
+                isCityPickerPresented = true
+            } label: {
+                HStack(spacing: 6) {
+                    Label(viewModel.selectedCity.name, systemImage: "mappin.and.ellipse")
+                        .font(.system(size: 20, weight: .heavy))
+                        .foregroundStyle(AppTheme.text)
+
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 13, weight: .heavy))
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("home_city_picker_button")
 
             Spacer()
 

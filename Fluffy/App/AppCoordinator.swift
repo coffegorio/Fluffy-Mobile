@@ -316,6 +316,8 @@ private extension AppCoordinator {
             marketplaceService: dependencies.marketplaceService,
             mapService: dependencies.mapService,
             mediaService: dependencies.mediaService,
+            cityService: dependencies.cityService,
+            citySelectionStore: dependencies.citySelectionStore,
             accessTokenProvider: dependencies.accessTokenProvider
         )
     }
@@ -325,7 +327,8 @@ private extension AppCoordinator {
             session: session,
             coordinator: self,
             marketplaceService: dependencies.marketplaceService,
-            mediaService: dependencies.mediaService
+            mediaService: dependencies.mediaService,
+            cityService: dependencies.cityService
         )
     }
 }

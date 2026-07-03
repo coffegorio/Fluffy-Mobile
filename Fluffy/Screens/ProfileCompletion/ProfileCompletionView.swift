@@ -216,16 +216,8 @@ private struct ProfileCompletionFormSection: View {
                 selectedCity: $selectedCity
             )
 
-            ProfileCompletionTextField(
-                label: "Телефон",
-                placeholder: "+7 (900) 123-45-67",
-                icon: "phone",
-                isRequired: true,
-                keyboardType: .phonePad,
-                accessibilityIdentifier: "profile_completion_phone_field",
-                text: $phone
-            )
-            .focused(focusedField, equals: .phone)
+            ProfileCompletionRussianPhoneField(phone: $phone)
+                .focused(focusedField, equals: .phone)
 
             if let phoneValidationMessage {
                 Text(phoneValidationMessage)
@@ -233,6 +225,66 @@ private struct ProfileCompletionFormSection: View {
                     .foregroundStyle(AppTheme.danger)
                     .padding(.top, -6)
             }
+        }
+    }
+}
+
+private struct ProfileCompletionRussianPhoneField: View {
+    @Binding var phone: String
+
+    private var nationalDigits: String {
+        var digits = phone.filter(\.isNumber)
+        if digits.first == "7" || digits.first == "8" {
+            digits.removeFirst()
+        }
+        return String(digits.prefix(10))
+    }
+
+    private var formattedNationalDigits: String {
+        let digits = nationalDigits
+        guard !digits.isEmpty else { return "" }
+        var result = String(digits.prefix(3))
+        if digits.count > 3 { result += " \(digits.dropFirst(3).prefix(3))" }
+        if digits.count > 6 { result += "-\(digits.dropFirst(6).prefix(2))" }
+        if digits.count > 8 { result += "-\(digits.dropFirst(8).prefix(2))" }
+        return result
+    }
+
+    private var nationalDigitsBinding: Binding<String> {
+        Binding(
+            get: { formattedNationalDigits },
+            set: { newValue in
+                let digits = String(newValue.filter(\.isNumber).prefix(10))
+                phone = digits.isEmpty ? "" : "+7\(digits)"
+            }
+        )
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ProfileCompletionLabel(text: "Телефон", isRequired: true)
+
+            HStack(spacing: 10) {
+                Text("+7")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(AppTheme.secondaryText)
+
+                TextField("900 123-45-67", text: nationalDigitsBinding)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(AppTheme.text)
+                    .keyboardType(.phonePad)
+                    .accessibilityLabel("Телефон")
+                    .accessibilityIdentifier("profile_completion_phone_field")
+
+                Image(systemName: "phone")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(AppTheme.secondaryText.opacity(0.72))
+                    .frame(width: 20, height: 20)
+            }
+            .padding(.horizontal, 16)
+            .frame(height: 54)
+            .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: ProfileCompletionLayout.controlRadius, style: .continuous))
+            .shadow(color: .black.opacity(0.035), radius: 12, x: 0, y: 6)
         }
     }
 }

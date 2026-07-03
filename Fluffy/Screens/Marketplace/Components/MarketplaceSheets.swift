@@ -1270,71 +1270,67 @@ struct ProfileActionSheet: View {
     }
 
     private var securityContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            safetyRow(
-                icon: "key.fill",
-                title: "Вход по одноразовому коду",
-                message: "Пароль не хранится в приложении. Refresh token лежит в Keychain и отзывается при выходе."
-            )
-            safetyRow(
-                icon: "arrow.triangle.2.circlepath",
-                title: "Короткие сессии",
-                message: "Access token обновляется через backend. Если refresh не проходит, сессия очищается."
-            )
-
-            Button(role: .destructive) {
-                dismiss()
-                onSignOut()
-            } label: {
-                Label("Выйти на этом устройстве", systemImage: "rectangle.portrait.and.arrow.right")
-                    .font(.system(size: 15, weight: .heavy))
-                    .frame(maxWidth: .infinity)
+        VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 10) {
+                safetyRow(
+                    icon: "key.fill",
+                    title: "Вход по одноразовому коду",
+                    message: "Пароль не хранится в приложении. Refresh token лежит в Keychain и отзывается при выходе."
+                )
+                safetyRow(
+                    icon: "arrow.triangle.2.circlepath",
+                    title: "Короткие сессии",
+                    message: "Access token обновляется через backend. Если refresh не проходит, сессия очищается."
+                )
             }
-            .buttonStyle(.bordered)
 
-            Button(role: .destructive) {
-                dismiss()
-                onSignOutEverywhere()
-            } label: {
-                Label("Выйти на всех устройствах", systemImage: "lock.rotation")
-                    .font(.system(size: 15, weight: .heavy))
-                    .frame(maxWidth: .infinity)
+            VStack(spacing: 10) {
+                securityButton("Выйти на этом устройстве", icon: "rectangle.portrait.and.arrow.right", style: .outlined(AppTheme.danger)) {
+                    dismiss()
+                    onSignOut()
+                }
+                securityButton("Выйти на всех устройствах", icon: "lock.rotation", style: .filled(AppTheme.danger)) {
+                    dismiss()
+                    onSignOutEverywhere()
+                }
             }
-            .buttonStyle(.borderedProminent)
 
-            Divider()
-                .padding(.vertical, 4)
+            sectionDivider
 
             blockedUsersSection
 
-            Divider()
-                .padding(.vertical, 4)
+            sectionDivider
 
-            safetyRow(
-                icon: "trash.fill",
-                title: "Удаление аккаунта",
-                message: "Профиль будет обезличен, сессии отозваны, push-устройства отключены, а ваши объявления скрыты из публичной выдачи."
-            )
+            VStack(alignment: .leading, spacing: 10) {
+                safetyRow(
+                    icon: "trash.fill",
+                    title: "Удаление аккаунта",
+                    message: "Профиль будет обезличен, сессии отозваны, push-устройства отключены, а ваши объявления скрыты из публичной выдачи.",
+                    tint: AppTheme.danger,
+                    tintSoft: AppTheme.danger.opacity(0.12)
+                )
 
-            Button(role: .destructive) {
-                showsDeleteAccountConfirmation = true
-            } label: {
-                Label("Удалить аккаунт", systemImage: "trash")
-                    .font(.system(size: 15, weight: .heavy))
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .confirmationDialog("Удалить аккаунт?", isPresented: $showsDeleteAccountConfirmation) {
-                Button("Удалить аккаунт", role: .destructive) {
-                    Task {
-                        dismiss()
-                        await onDeleteAccount()
-                    }
+                securityButton("Удалить аккаунт", icon: "trash", style: .filled(AppTheme.danger)) {
+                    showsDeleteAccountConfirmation = true
                 }
-            } message: {
-                Text("Это действие нельзя отменить. Ваши объявления исчезнут из выдачи, а вход на текущих устройствах завершится.")
+                .confirmationDialog("Удалить аккаунт?", isPresented: $showsDeleteAccountConfirmation) {
+                    Button("Удалить аккаунт", role: .destructive) {
+                        Task {
+                            dismiss()
+                            await onDeleteAccount()
+                        }
+                    }
+                } message: {
+                    Text("Это действие нельзя отменить. Ваши объявления исчезнут из выдачи, а вход на текущих устройствах завершится.")
+                }
             }
         }
+    }
+
+    private var sectionDivider: some View {
+        Rectangle()
+            .fill(AppTheme.muted)
+            .frame(height: 1)
     }
 
     private var blockedUsersSection: some View {
@@ -1368,18 +1364,23 @@ struct ProfileActionSheet: View {
 
                     Spacer()
 
-                    Button(role: .destructive) {
+                    Button {
                         Task {
                             await onUnblockUser(user)
                         }
                     } label: {
                         Text("Разблокировать")
                             .font(.system(size: 12, weight: .heavy))
+                            .foregroundStyle(AppTheme.danger)
+                            .padding(.horizontal, 12)
+                            .frame(height: 32)
+                            .background(AppTheme.danger.opacity(0.10), in: Capsule())
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.plain)
                 }
                 .padding(12)
-                .background(AppTheme.surface.opacity(0.72), in: RoundedRectangle(cornerRadius: AppTheme.compactRadius))
+                .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: AppTheme.compactRadius, style: .continuous))
+                .shadow(color: .black.opacity(0.035), radius: 12, x: 0, y: 6)
             }
         }
     }
@@ -1445,16 +1446,17 @@ struct ProfileActionSheet: View {
         }
         .tint(AppTheme.accent)
         .padding(14)
-        .background(.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: AppTheme.compactRadius, style: .continuous))
+        .shadow(color: .black.opacity(0.035), radius: 12, x: 0, y: 6)
     }
 
-    private func safetyRow(icon: String, title: String, message: String) -> some View {
+    private func safetyRow(icon: String, title: String, message: String, tint: Color = AppTheme.accent, tintSoft: Color = AppTheme.accentSoft) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(AppTheme.accent)
-                .frame(width: 34, height: 34)
-                .background(AppTheme.accentSoft, in: Circle())
+                .foregroundStyle(tint)
+                .frame(width: 36, height: 36)
+                .background(tintSoft, in: Circle())
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
@@ -1465,9 +1467,47 @@ struct ProfileActionSheet: View {
                     .foregroundStyle(AppTheme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            Spacer(minLength: 0)
         }
         .padding(14)
-        .background(.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: AppTheme.compactRadius, style: .continuous))
+        .shadow(color: .black.opacity(0.035), radius: 12, x: 0, y: 6)
+    }
+
+    private enum SecurityButtonStyle {
+        case filled(Color)
+        case outlined(Color)
+    }
+
+    private func securityButton(_ title: String, icon: String, style: SecurityButtonStyle, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: icon)
+                .font(.system(size: 15, weight: .heavy))
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+        }
+        .buttonStyle(.plain)
+        .background {
+            switch style {
+            case let .filled(color):
+                RoundedRectangle(cornerRadius: AppTheme.compactRadius, style: .continuous)
+                    .fill(color)
+                    .shadow(color: color.opacity(0.28), radius: 14, x: 0, y: 8)
+            case let .outlined(color):
+                RoundedRectangle(cornerRadius: AppTheme.compactRadius, style: .continuous)
+                    .fill(color.opacity(0.10))
+            }
+        }
+        .foregroundStyle(styleForegroundColor(style))
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.compactRadius, style: .continuous))
+    }
+
+    private func styleForegroundColor(_ style: SecurityButtonStyle) -> Color {
+        switch style {
+        case .filled: .white
+        case let .outlined(color): color
+        }
     }
 
     private var iconName: String {

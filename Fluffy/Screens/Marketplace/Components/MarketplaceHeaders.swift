@@ -109,7 +109,7 @@ struct MarketplaceErrorStateView: View {
             Text("marketplace_error_title")
                 .font(.system(size: 17, weight: .heavy))
 
-            Text(message)
+            Text(LocalizedStringKey(message))
                 .font(.system(size: 14))
                 .foregroundStyle(AppTheme.secondaryText)
                 .multilineTextAlignment(.center)

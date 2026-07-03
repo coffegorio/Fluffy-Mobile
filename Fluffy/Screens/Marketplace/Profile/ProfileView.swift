@@ -99,11 +99,11 @@ struct ProfileView: View {
                 .background(verificationTint.opacity(0.12), in: Circle())
 
             VStack(alignment: .leading, spacing: 8) {
-                Text(verificationTitle)
+                Text(LocalizedStringKey(verificationTitle))
                     .font(.system(size: 15, weight: .heavy))
                     .foregroundStyle(AppTheme.text)
 
-                Text(verificationMessage)
+                Text(LocalizedStringKey(verificationMessage))
                     .font(.system(size: 13))
                     .foregroundStyle(AppTheme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -445,7 +445,7 @@ struct MyListingsView: View {
                     Button {
                         filter = item
                     } label: {
-                        Text(item.title)
+                        Text(LocalizedStringKey(item.title))
                             .font(.system(size: 13, weight: .heavy))
                             .foregroundStyle(filter == item ? .white : AppTheme.text)
                             .padding(.horizontal, 12)
@@ -553,7 +553,7 @@ struct ListingStatusBadge: View {
     let status: ListingStatus
 
     var body: some View {
-        Label(status.title, systemImage: status.systemImage)
+        Label(LocalizedStringKey(status.title), systemImage: status.systemImage)
             .font(.system(size: 11, weight: .heavy))
             .lineLimit(1)
             .foregroundStyle(status.tint)
@@ -634,7 +634,7 @@ private struct ReportRow: View {
                         .foregroundStyle(AppTheme.text)
                         .lineLimit(2)
 
-                    Text("\(report.targetType.title) · \(formattedDate)")
+                    (Text(LocalizedStringKey(report.targetType.title)) + Text(" · \(formattedDate)"))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(AppTheme.secondaryText)
                 }
@@ -675,7 +675,7 @@ private struct ReportStatusBadge: View {
     let status: ReportStatus
 
     var body: some View {
-        Text(status.title)
+        Text(LocalizedStringKey(status.title))
             .font(.system(size: 11, weight: .heavy))
             .lineLimit(1)
             .foregroundStyle(status.tint)

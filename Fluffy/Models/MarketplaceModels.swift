@@ -840,9 +840,9 @@ struct Listing: Identifiable, Hashable {
     var distanceText: String? {
         guard let distance else { return nil }
         if distance < 1000 {
-            return "\(Int(distance)) м"
+            return String(format: String(localized: "distance_meters"), Int(distance))
         } else {
-            return String(format: "%.1f км", distance / 1000.0)
+            return String(format: String(localized: "distance_kilometers"), distance / 1000.0)
         }
     }
 

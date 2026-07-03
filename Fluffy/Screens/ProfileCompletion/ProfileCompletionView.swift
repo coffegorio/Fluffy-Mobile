@@ -43,7 +43,7 @@ struct ProfileCompletionView: View {
                         ProfileCompletionInfoCard()
 
                         if let errorMessage = viewModel.errorMessage {
-                            Text(errorMessage)
+                            Text(LocalizedStringKey(errorMessage))
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundStyle(AppTheme.danger)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -385,13 +385,13 @@ private struct ProfileCompletionReadonlyRow: View {
             ProfileCompletionLabel(text: label, isRequired: false)
 
             HStack(spacing: 10) {
-                Text(value)
+                Text(LocalizedStringKey(value))
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(AppTheme.text)
 
                 Spacer()
 
-                Text(badge)
+                Text(LocalizedStringKey(badge))
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(AppTheme.secondaryText)
 
@@ -414,7 +414,7 @@ private struct ProfileCompletionLabel: View {
 
     var body: some View {
         HStack(spacing: 3) {
-            Text(text)
+            Text(LocalizedStringKey(text))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(AppTheme.text)
 

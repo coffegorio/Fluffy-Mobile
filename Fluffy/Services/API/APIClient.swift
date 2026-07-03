@@ -193,16 +193,18 @@ enum APIClientError: LocalizedError {
         let message: String
         switch self {
         case .invalidURL:
-            message = "Invalid API URL."
+            message = String(localized: "api_error_invalid_url")
         case .invalidResponse:
-            message = "Invalid API response."
+            message = String(localized: "api_error_invalid_response")
         case let .httpStatus(status, _):
-            message = status == 429 ? "Слишком много попыток. Попробуйте немного позже." : "Request failed with status \(status)."
+            message = status == 429
+                ? String(localized: "api_error_rate_limited")
+                : String(format: String(localized: "api_error_http_status"), status)
         case let .api(code, apiMessage, _):
             message = Self.userFacingAPIMessage(code: code, fallback: apiMessage)
         }
         guard let requestID else { return message }
-        return "\(message)\nID запроса: \(requestID)"
+        return String(format: String(localized: "api_error_request_id_suffix"), message, requestID)
     }
 
     var requestID: String? {
@@ -226,9 +228,9 @@ enum APIClientError: LocalizedError {
     private static func userFacingAPIMessage(code: String, fallback: String) -> String {
         switch code {
         case "rate_limited":
-            return "Слишком много попыток. Попробуйте немного позже."
+            return String(localized: "api_error_rate_limited")
         case "verification_required":
-            return "Для этого действия нужна верификация профиля. Отправьте заявку в профиле и дождитесь проверки."
+            return String(localized: "api_error_verification_required")
         default:
             return fallback
         }

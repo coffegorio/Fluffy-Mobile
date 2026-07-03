@@ -40,7 +40,7 @@ struct AuthPanel: View {
                 .padding(.top, AuthLayout.actionsTopPadding)
 
                 if let errorMessage {
-                    Text(errorMessage)
+                    Text(LocalizedStringKey(errorMessage))
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(AppTheme.danger)
                         .padding(.top, 12)

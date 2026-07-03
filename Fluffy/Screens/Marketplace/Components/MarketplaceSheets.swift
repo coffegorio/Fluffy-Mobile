@@ -101,7 +101,7 @@ struct AddListingSheet: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(step.title)
+                Text(LocalizedStringKey(step.title))
                     .font(.system(size: 26, weight: .heavy))
                     .foregroundStyle(AppTheme.text)
 
@@ -150,7 +150,7 @@ struct AddListingSheet: View {
             sectionTitle("Формат")
             Picker("Формат", selection: $draft.publicationFormat) {
                 ForEach(PublicationFormat.allCases) { format in
-                    Text(format.title).tag(format)
+                    Text(LocalizedStringKey(format.title)).tag(format)
                 }
             }
             .pickerStyle(.segmented)
@@ -207,7 +207,7 @@ struct AddListingSheet: View {
 
                 Picker("Способ связи", selection: $draft.contactMethod) {
                     ForEach(ContactMethod.allCases) { method in
-                        Text(method.title).tag(method)
+                        Text(LocalizedStringKey(method.title)).tag(method)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -241,7 +241,7 @@ struct AddListingSheet: View {
 
             Picker("Насколько срочно", selection: $draft.helpUrgency) {
                 ForEach(HelpUrgency.allCases) { item in
-                    Text(item.title).tag(item)
+                    Text(LocalizedStringKey(item.title)).tag(item)
                 }
             }
             .pickerStyle(.segmented)
@@ -286,7 +286,7 @@ struct AddListingSheet: View {
         sectionCard(title: "Потерялся / найден") {
             Picker("Статус", selection: $draft.lostFoundMode) {
                 ForEach(LostFoundMode.allCases) { mode in
-                    Text(mode.title).tag(mode)
+                    Text(LocalizedStringKey(mode.title)).tag(mode)
                 }
             }
             .pickerStyle(.segmented)
@@ -303,7 +303,7 @@ struct AddListingSheet: View {
         sectionCard(title: "Передержка / pet-sitting") {
             Picker("Формат", selection: $draft.sittingMode) {
                 ForEach(SittingMode.allCases) { mode in
-                    Text(mode.title).tag(mode)
+                    Text(LocalizedStringKey(mode.title)).tag(mode)
                 }
             }
             .pickerStyle(.segmented)
@@ -463,7 +463,7 @@ struct AddListingSheet: View {
     }
 
     private func sectionTitle(_ title: String) -> some View {
-        Text(title)
+        Text(LocalizedStringKey(title))
             .font(.system(size: 18, weight: .heavy))
             .foregroundStyle(AppTheme.text)
     }
@@ -483,7 +483,7 @@ struct AddListingSheet: View {
 
     private func field(_ title: String, text: Binding<String>, placeholder: String, keyboard: UIKeyboardType = .default) -> some View {
         VStack(alignment: .leading, spacing: 7) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 13, weight: .heavy))
                 .foregroundStyle(AppTheme.text)
             TextField(placeholder, text: text)
@@ -497,7 +497,7 @@ struct AddListingSheet: View {
 
     private func textEditor(_ title: String, text: Binding<String>, placeholder: String) -> some View {
         VStack(alignment: .leading, spacing: 7) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 13, weight: .heavy))
                 .foregroundStyle(AppTheme.text)
             ZStack(alignment: .topLeading) {
@@ -521,7 +521,7 @@ struct AddListingSheet: View {
 
     private func chipCloud<Value: CaseIterable & Hashable & Identifiable>(title: String, values: Value.AllCases, selection: Binding<Set<Value>>) -> some View where Value.AllCases: RandomAccessCollection, Value.ID == String, Value: TitledOption {
         VStack(alignment: .leading, spacing: 10) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 13, weight: .heavy))
             FlowLayout(spacing: 8) {
                 ForEach(Array(values), id: \.id) { value in
@@ -539,7 +539,7 @@ struct AddListingSheet: View {
 
     private func singleChoiceCloud<Value: CaseIterable & Hashable & Identifiable>(title: String, values: Value.AllCases, selection: Binding<Value>) -> some View where Value.AllCases: RandomAccessCollection, Value.ID == String, Value: TitledOption {
         VStack(alignment: .leading, spacing: 10) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 13, weight: .heavy))
             FlowLayout(spacing: 8) {
                 ForEach(Array(values), id: \.id) { value in
@@ -553,11 +553,11 @@ struct AddListingSheet: View {
 
     private func reviewRow(_ title: String, _ value: String) -> some View {
         HStack(alignment: .top) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 13, weight: .heavy))
                 .foregroundStyle(AppTheme.secondaryText)
             Spacer(minLength: 12)
-            Text(value.isEmpty ? "-" : value)
+            Text(LocalizedStringKey(value.isEmpty ? "-" : value))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(AppTheme.text)
                 .multilineTextAlignment(.trailing)
@@ -634,10 +634,10 @@ private struct ScenarioCard: View {
                     .background(isSelected ? AppTheme.accent : AppTheme.accentSoft, in: RoundedRectangle(cornerRadius: 15, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                         .font(.system(size: 16, weight: .heavy))
                         .foregroundStyle(AppTheme.text)
-                    Text(subtitle)
+                    Text(LocalizedStringKey(subtitle))
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(AppTheme.secondaryText)
                         .multilineTextAlignment(.leading)
@@ -665,7 +665,7 @@ private struct SelectionChip: View {
 
     var body: some View {
         Button(action: action) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 13, weight: .heavy))
                 .foregroundStyle(isSelected ? .white : AppTheme.text)
                 .padding(.horizontal, 13)
@@ -781,7 +781,7 @@ struct EditListingSheet: View {
 
     private func field(_ title: String, text: Binding<String>, placeholder: String, keyboard: UIKeyboardType = .default) -> some View {
         VStack(alignment: .leading, spacing: 7) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 13, weight: .heavy))
                 .foregroundStyle(AppTheme.text)
             TextField(placeholder, text: text)
@@ -795,7 +795,7 @@ struct EditListingSheet: View {
 
     private func textEditor(_ title: String, text: Binding<String>, placeholder: String) -> some View {
         VStack(alignment: .leading, spacing: 7) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 13, weight: .heavy))
                 .foregroundStyle(AppTheme.text)
             ZStack(alignment: .topLeading) {
@@ -851,7 +851,7 @@ struct ReportListingSheet: View {
                                     draft.reason = reason
                                 } label: {
                                     HStack(spacing: 12) {
-                                        Text(reason.title)
+                                        Text(LocalizedStringKey(reason.title))
                                             .font(.system(size: 15, weight: .semibold))
                                             .foregroundStyle(AppTheme.text)
 
@@ -941,11 +941,11 @@ struct ReportTargetSheet: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(target.title)
+                            Text(LocalizedStringKey(target.title))
                                 .font(.system(size: 24, weight: .heavy))
                                 .foregroundStyle(AppTheme.text)
 
-                            Text(target.subtitle)
+                            Text(LocalizedStringKey(target.subtitle))
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundStyle(AppTheme.secondaryText)
                                 .lineLimit(3)
@@ -960,7 +960,7 @@ struct ReportTargetSheet: View {
                                     draft.reason = reason
                                 } label: {
                                     HStack(spacing: 12) {
-                                        Text(reason.title)
+                                        Text(LocalizedStringKey(reason.title))
                                             .font(.system(size: 15, weight: .semibold))
                                             .foregroundStyle(AppTheme.text)
 
@@ -1200,7 +1200,7 @@ struct ProfileActionSheet: View {
                 .padding(18)
             }
             .background(AppTheme.background.ignoresSafeArea())
-            .navigationTitle(title)
+            .navigationTitle(LocalizedStringKey(title))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -1220,11 +1220,11 @@ struct ProfileActionSheet: View {
                 .background(AppTheme.accentSoft, in: Circle())
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.system(size: 24, weight: .heavy))
                     .foregroundStyle(AppTheme.text)
 
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(AppTheme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -1436,10 +1436,10 @@ struct ProfileActionSheet: View {
     private func settingsToggle(_ title: String, _ message: String, isOn: Binding<Bool>) -> some View {
         Toggle(isOn: isOn) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.system(size: 15, weight: .heavy))
                     .foregroundStyle(AppTheme.text)
-                Text(message)
+                Text(LocalizedStringKey(message))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(AppTheme.secondaryText)
             }
@@ -1459,10 +1459,10 @@ struct ProfileActionSheet: View {
                 .background(tintSoft, in: Circle())
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.system(size: 15, weight: .heavy))
                     .foregroundStyle(AppTheme.text)
-                Text(message)
+                Text(LocalizedStringKey(message))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(AppTheme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -1482,7 +1482,7 @@ struct ProfileActionSheet: View {
 
     private func securityButton(_ title: String, icon: String, style: SecurityButtonStyle, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Label(title, systemImage: icon)
+            Label(LocalizedStringKey(title), systemImage: icon)
                 .font(.system(size: 15, weight: .heavy))
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)

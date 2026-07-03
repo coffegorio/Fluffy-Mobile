@@ -1,10 +1,10 @@
 schemaVersion: 1
 sessionDefaults:
-  projectPath: /Users/coffegorio/Development/Fluffy/iOS/Fluffy-SUI/Fluffy.xcodeproj
+  projectPath: /Users/coffegorio/Development/Fluffy/mobile/Fluffy.xcodeproj
   scheme: Fluffy
   configuration: Debug
   simulatorName: iPhone 17 Pro
-  simulatorId: 94C1F0EB-798C-4E2B-932D-0155B3955707
+  simulatorId: E2482921-6273-4C0F-AE43-8B4D691D2F4B
   useLatestOS: true
   bundleId: fluffy.Fluffyyyyy
   simulatorPlatform: iOS Simulator

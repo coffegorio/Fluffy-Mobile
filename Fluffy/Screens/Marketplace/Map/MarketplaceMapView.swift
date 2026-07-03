@@ -9,12 +9,17 @@ import SwiftUI
 struct MarketplaceMapView: View {
     let viewModel: MainViewModel
 
-    @State private var position = MapCameraPosition.region(
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 52.6031, longitude: 39.5708),
-            span: MKCoordinateSpan(latitudeDelta: 0.22, longitudeDelta: 0.36)
-        )
-    )
+    @State private var position: MapCameraPosition
+
+    init(viewModel: MainViewModel) {
+        self.viewModel = viewModel
+        _position = State(initialValue: .region(
+            MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: viewModel.selectedCity.latitude, longitude: viewModel.selectedCity.longitude),
+                span: MKCoordinateSpan(latitudeDelta: 0.22, longitudeDelta: 0.36)
+            )
+        ))
+    }
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -49,7 +54,7 @@ struct MarketplaceMapView: View {
                     Spacer()
                     MarketplaceEmptyStateView(
                         title: "map_empty_title",
-                        subtitle: "map_empty_subtitle"
+                        subtitle: LocalizedStringKey(String(format: String(localized: "map_empty_subtitle"), viewModel.selectedCity.name))
                     )
                     .background(AppTheme.surface.opacity(0.74), in: RoundedRectangle(cornerRadius: AppTheme.cardRadius))
                     .padding(.horizontal, 24)

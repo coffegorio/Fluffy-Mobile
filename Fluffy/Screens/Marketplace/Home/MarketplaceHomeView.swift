@@ -27,7 +27,7 @@ struct MarketplaceHomeView: View {
                     if viewModel.listings.isEmpty {
                         MarketplaceEmptyStateView(
                             title: "home_empty_title",
-                            subtitle: "home_empty_subtitle"
+                            subtitle: LocalizedStringKey(String(format: String(localized: "home_empty_subtitle"), viewModel.selectedCity.name))
                         )
                     } else if !viewModel.urgentListings.isEmpty {
                         urgentSection
@@ -36,7 +36,7 @@ struct MarketplaceHomeView: View {
                     HomePromoBanner(
                         eyebrow: "home_shelters_eyebrow",
                         title: "home_shelters_title",
-                        subtitle: "home_shelters_subtitle",
+                        subtitle: LocalizedStringKey(String(format: String(localized: "home_shelters_subtitle"), viewModel.selectedCity.name)),
                         systemImage: "heart.text.square.fill",
                         tint: .black.opacity(0.68),
                         imageURL: viewModel.shelters.first?.imageURL,

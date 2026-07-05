@@ -37,11 +37,6 @@ struct ExploreView: View {
                         }
                         .buttonStyle(.plain)
                     }
-
-                    MarketplaceSearchBar(
-                        text: $viewModel.searchText,
-                        placeholder: "explore_search_placeholder"
-                    )
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 16)

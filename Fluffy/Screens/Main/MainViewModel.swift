@@ -90,7 +90,7 @@ final class MainViewModel {
     private static let logger = Logger(subsystem: "ru.fluffy.app", category: "main-view-model")
 
     var selectedTab: MainTab = .home
-    var path: [MarketplaceRoute] = []
+    var tabPaths: [MainTab: [MarketplaceRoute]] = [:]
     var activeSheet: MarketplaceSheet?
     var listings: [Listing] = []
     var shelters: [Shelter] = []
@@ -155,19 +155,19 @@ final class MainViewModel {
 
         if let rawRoute = ProcessInfo.processInfo.value(after: "-UITestInitialRoute") {
             if let listingID = rawRoute.removingPrefix("listingDetail:") {
-                path = [.listingDetail(listingID)]
+                tabPaths[selectedTab] = [.listingDetail(listingID)]
             } else {
                 switch rawRoute {
                 case "shelters":
-                    path = [.shelters]
+                    tabPaths[selectedTab] = [.shelters]
                 case "petSitting":
-                    path = [.petSitting]
+                    tabPaths[selectedTab] = [.petSitting]
                 case "map":
-                    path = [.map]
+                    tabPaths[selectedTab] = [.map]
                 case "myListings":
-                    path = [.myListings]
+                    tabPaths[selectedTab] = [.myListings]
                 case "myReports":
-                    path = [.myReports]
+                    tabPaths[selectedTab] = [.myReports]
                 default:
                     break
                 }
@@ -338,34 +338,51 @@ final class MainViewModel {
         }
     }
 
+    func pathBinding(for tab: MainTab) -> Binding<[MarketplaceRoute]> {
+        Binding(
+            get: { self.tabPaths[tab, default: []] },
+            set: { self.tabPaths[tab] = $0 }
+        )
+    }
+
+    private func pushRoute(_ route: MarketplaceRoute) {
+        tabPaths[selectedTab, default: []].append(route)
+    }
+
+    private func removeRoute(where predicate: (MarketplaceRoute) -> Bool) {
+        for tab in tabPaths.keys {
+            tabPaths[tab]?.removeAll(where: predicate)
+        }
+    }
+
     func showExplore() {
         selectedTab = .explore
     }
 
     func showListing(_ listing: Listing) {
-        path.append(.listingDetail(listing.id))
+        pushRoute(.listingDetail(listing.id))
     }
 
     func showMyListings() {
         selectedTab = .profile
-        path.append(.myListings)
+        pushRoute(.myListings)
     }
 
     func showMyReports() {
         selectedTab = .profile
-        path.append(.myReports)
+        pushRoute(.myReports)
     }
 
     func showShelters() {
-        path.append(.shelters)
+        pushRoute(.shelters)
     }
 
     func showPetSitting() {
-        path.append(.petSitting)
+        pushRoute(.petSitting)
     }
 
     func showMap() {
-        path.append(.map)
+        pushRoute(.map)
     }
 
     func selectCity(_ city: City) async {
@@ -419,11 +436,11 @@ final class MainViewModel {
     func showMapMarker(_ marker: MapMarker) {
         switch marker.target {
         case let .listing(id):
-            path.append(.listingDetail(id))
+            pushRoute(.listingDetail(id))
         case .shelters:
-            path.append(.shelters)
+            pushRoute(.shelters)
         case .petSitting:
-            path.append(.petSitting)
+            pushRoute(.petSitting)
         }
     }
 
@@ -431,7 +448,7 @@ final class MainViewModel {
         if let index = conversations.firstIndex(where: { $0.id == conversation.id }) {
             conversations[index].unreadCount = 0
         }
-        path.append(.conversation(conversation.id))
+        pushRoute(.conversation(conversation.id))
         Task {
             await loadConversationMessagesIfNeeded(conversation.id)
         }
@@ -449,7 +466,7 @@ final class MainViewModel {
                     conversations.insert(conversation, at: 0)
                     loadedConversationMessageIDs.insert(conversation.id)
                     selectedTab = .chats
-                    path.append(.conversation(conversation.id))
+                    pushRoute(.conversation(conversation.id))
                 }
             }
         }
@@ -588,7 +605,7 @@ final class MainViewModel {
             favoriteListingIDs.remove(listing.id)
             upsertMyListing(listing)
             selectedTab = .profile
-            path.append(.myListings)
+            pushRoute(.myListings)
             activeSheet = .status(
                 title: "Отправлено на модерацию",
                 message: listing.isUrgent
@@ -641,7 +658,7 @@ final class MainViewModel {
                 myListings.removeAll { $0.id == listing.id }
                 listings.removeAll { $0.id == listing.id }
                 favoriteListingIDs.remove(listing.id)
-                path.removeAll { route in
+                removeRoute { route in
                     if case let .listingDetail(id) = route {
                         return id == listing.id
                     }
@@ -687,7 +704,7 @@ final class MainViewModel {
             try await marketplaceService.blockUser(userID: userID)
             blockedUsers = try await marketplaceService.fetchBlockedUsers()
             conversations.removeAll { $0.id == conversation.id || $0.otherParticipantID == userID }
-            path.removeAll { route in
+            removeRoute { route in
                 if case let .conversation(id) = route {
                     return id == conversation.id
                 }
@@ -782,7 +799,7 @@ final class MainViewModel {
                 }
                 loadedConversationMessageIDs.insert(conversation.id)
                 selectedTab = .chats
-                path.append(.conversation(conversation.id))
+                pushRoute(.conversation(conversation.id))
             }
         }
     }
@@ -980,7 +997,8 @@ extension MainViewModel: WebSocketServiceDelegate {
         conversations[index].lastMessage = displayLastMessage
         conversations[index].time = timeString
         
-        let isCurrentlyViewing = path.contains(.conversation(message.chatId))
+        let isCurrentlyViewing = selectedTab == .chats
+            && tabPaths[.chats, default: []].contains(.conversation(message.chatId))
         if !isCurrentlyViewing && sender == .them {
             conversations[index].unreadCount += 1
         } else if isCurrentlyViewing {

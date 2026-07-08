@@ -692,10 +692,10 @@ private struct ReportRow: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: report.status.systemImage)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(report.status.tint)
                     .frame(width: 34, height: 34)
-                    .background(report.status.tint.opacity(0.12), in: Circle())
+                    .background(report.status.tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 5) {
                     Text(report.reason)

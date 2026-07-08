@@ -1193,7 +1193,7 @@ struct ProfileActionSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 22) {
                     header
                     content
                 }
@@ -1212,16 +1212,16 @@ struct ProfileActionSheet: View {
     }
 
     private var header: some View {
-        HStack(alignment: .top, spacing: 14) {
+        HStack(alignment: .center, spacing: 14) {
             Image(systemName: iconName)
-                .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(AppTheme.accent)
-                .frame(width: 50, height: 50)
-                .background(AppTheme.accentSoft, in: Circle())
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(headerTint)
+                .frame(width: 46, height: 46)
+                .background(headerTint.opacity(0.13), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(LocalizedStringKey(title))
-                    .font(.system(size: 24, weight: .heavy))
+                    .font(.system(size: 22, weight: .heavy))
                     .foregroundStyle(AppTheme.text)
 
                 Text(LocalizedStringKey(subtitle))
@@ -1251,16 +1251,20 @@ struct ProfileActionSheet: View {
     }
 
     private var notificationContent: some View {
-        VStack(spacing: 10) {
-            settingsToggle("Ответы в чатах", "Когда вам написали по объявлению или передержке", isOn: $notificationPreferences.replies)
-            settingsToggle("Модерация", "Статусы объявлений, жалоб и верификации", isOn: $notificationPreferences.moderation)
-            settingsToggle("Безопасность", "Важные изменения входа и сессий", isOn: $notificationPreferences.safety)
+        sheetSection("Что присылать") {
+            groupedCard {
+                toggleRow(icon: "bubble.left.fill", tint: AppTheme.blue, title: "Ответы в чатах", message: "Когда вам написали по объявлению или передержке", isOn: $notificationPreferences.replies)
+                rowDivider
+                toggleRow(icon: "checkmark.shield.fill", tint: AppTheme.amber, title: "Модерация", message: "Статусы объявлений, жалоб и верификации", isOn: $notificationPreferences.moderation)
+                rowDivider
+                toggleRow(icon: "lock.fill", tint: AppTheme.success, title: "Безопасность", message: "Важные изменения входа и сессий", isOn: $notificationPreferences.safety)
+            }
 
             Text("Эти настройки сохраняются в профиле и будут использоваться для push-доставки на подключенных устройствах.")
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(AppTheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 4)
+                .padding(.horizontal, 4)
         }
         .onChange(of: notificationPreferences) { _, value in
             Task {
@@ -1270,48 +1274,55 @@ struct ProfileActionSheet: View {
     }
 
     private var securityContent: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading, spacing: 10) {
-                safetyRow(
-                    icon: "key.fill",
-                    title: "Вход по одноразовому коду",
-                    message: "Пароль не хранится в приложении. Refresh token лежит в Keychain и отзывается при выходе."
-                )
-                safetyRow(
-                    icon: "arrow.triangle.2.circlepath",
-                    title: "Короткие сессии",
-                    message: "Access token обновляется через backend. Если refresh не проходит, сессия очищается."
-                )
-            }
-
-            VStack(spacing: 10) {
-                securityButton("Выйти на этом устройстве", icon: "rectangle.portrait.and.arrow.right", style: .outlined(AppTheme.danger)) {
-                    dismiss()
-                    onSignOut()
-                }
-                securityButton("Выйти на всех устройствах", icon: "lock.rotation", style: .filled(AppTheme.danger)) {
-                    dismiss()
-                    onSignOutEverywhere()
+        VStack(alignment: .leading, spacing: 22) {
+            sheetSection("Как устроен вход") {
+                groupedCard {
+                    infoRow(
+                        icon: "key.fill",
+                        tint: AppTheme.success,
+                        title: "Вход по одноразовому коду",
+                        message: "Пароль не хранится в приложении. Refresh token лежит в Keychain и отзывается при выходе."
+                    )
+                    rowDivider
+                    infoRow(
+                        icon: "arrow.triangle.2.circlepath",
+                        tint: AppTheme.blue,
+                        title: "Короткие сессии",
+                        message: "Access token обновляется через backend. Если refresh не проходит, сессия очищается."
+                    )
                 }
             }
 
-            sectionDivider
+            sheetSection("Сессии") {
+                groupedCard {
+                    actionRow(icon: "rectangle.portrait.and.arrow.right", tint: AppTheme.danger, title: "Выйти на этом устройстве") {
+                        dismiss()
+                        onSignOut()
+                    }
+                    rowDivider
+                    actionRow(icon: "lock.rotation", tint: AppTheme.danger, title: "Выйти на всех устройствах") {
+                        dismiss()
+                        onSignOutEverywhere()
+                    }
+                }
+            }
 
-            blockedUsersSection
+            sheetSection("Заблокированные пользователи") {
+                blockedUsersCard
+            }
 
-            sectionDivider
-
-            VStack(alignment: .leading, spacing: 10) {
-                safetyRow(
-                    icon: "trash.fill",
-                    title: "Удаление аккаунта",
-                    message: "Профиль будет обезличен, сессии отозваны, push-устройства отключены, а ваши объявления скрыты из публичной выдачи.",
-                    tint: AppTheme.danger,
-                    tintSoft: AppTheme.danger.opacity(0.12)
-                )
-
-                securityButton("Удалить аккаунт", icon: "trash", style: .filled(AppTheme.danger)) {
-                    showsDeleteAccountConfirmation = true
+            sheetSection("Опасная зона") {
+                groupedCard {
+                    infoRow(
+                        icon: "trash.fill",
+                        tint: AppTheme.danger,
+                        title: "Удаление аккаунта",
+                        message: "Профиль будет обезличен, сессии отозваны, push-устройства отключены, а ваши объявления скрыты из публичной выдачи."
+                    )
+                    rowDivider
+                    actionRow(icon: "trash", tint: AppTheme.danger, title: "Удалить аккаунт") {
+                        showsDeleteAccountConfirmation = true
+                    }
                 }
                 .confirmationDialog("Удалить аккаунт?", isPresented: $showsDeleteAccountConfirmation) {
                     Button("Удалить аккаунт", role: .destructive) {
@@ -1327,140 +1338,184 @@ struct ProfileActionSheet: View {
         }
     }
 
-    private var sectionDivider: some View {
-        Rectangle()
-            .fill(AppTheme.muted)
-            .frame(height: 1)
-    }
+    private var blockedUsersCard: some View {
+        groupedCard {
+            if blockedUsers.isEmpty {
+                infoRow(
+                    icon: "hand.raised.fill",
+                    tint: AppTheme.blue,
+                    title: "Заблокированных нет",
+                    message: "Если кто-то будет мешать, заблокируйте его в чате — он появится здесь."
+                )
+            } else {
+                ForEach(Array(blockedUsers.enumerated()), id: \.element.id) { index, user in
+                    HStack(spacing: 12) {
+                        RemoteImageView(url: user.avatarURL)
+                            .frame(width: 38, height: 38)
+                            .clipShape(Circle())
 
-    private var blockedUsersSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            safetyRow(
-                icon: "hand.raised.fill",
-                title: "Заблокированные пользователи",
-                message: blockedUsers.isEmpty
-                    ? "Заблокированных пользователей нет."
-                    : "Разблокируйте пользователя, если хотите снова получать от него сообщения."
-            )
-
-            ForEach(blockedUsers) { user in
-                HStack(spacing: 12) {
-                    RemoteImageView(url: user.avatarURL)
-                        .frame(width: 38, height: 38)
-                        .clipShape(Circle())
-
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(user.name)
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(AppTheme.text)
-                            .lineLimit(1)
-                        if let handle = user.handle, !handle.isEmpty {
-                            Text(handle)
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(AppTheme.secondaryText)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(user.name)
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(AppTheme.text)
                                 .lineLimit(1)
+                            if let handle = user.handle, !handle.isEmpty {
+                                Text(handle)
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(AppTheme.secondaryText)
+                                    .lineLimit(1)
+                            }
                         }
-                    }
 
-                    Spacer()
+                        Spacer()
 
-                    Button {
-                        Task {
-                            await onUnblockUser(user)
+                        Button {
+                            Task {
+                                await onUnblockUser(user)
+                            }
+                        } label: {
+                            Text("Разблокировать")
+                                .font(.system(size: 12, weight: .heavy))
+                                .foregroundStyle(AppTheme.danger)
+                                .padding(.horizontal, 12)
+                                .frame(height: 32)
+                                .background(AppTheme.danger.opacity(0.10), in: Capsule())
                         }
-                    } label: {
-                        Text("Разблокировать")
-                            .font(.system(size: 12, weight: .heavy))
-                            .foregroundStyle(AppTheme.danger)
-                            .padding(.horizontal, 12)
-                            .frame(height: 32)
-                            .background(AppTheme.danger.opacity(0.10), in: Capsule())
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 11)
+
+                    if index < blockedUsers.count - 1 {
+                        rowDivider
+                    }
                 }
-                .padding(12)
-                .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: AppTheme.compactRadius, style: .continuous))
-                .shadow(color: .black.opacity(0.035), radius: 12, x: 0, y: 6)
             }
         }
     }
 
     private var helpContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            safetyRow(
-                icon: "flag.fill",
-                title: "Жалобы на объявления",
-                message: "Откройте объявление и нажмите “Пожаловаться”. Жалоба попадет модераторам."
-            )
-            safetyRow(
-                icon: "shield.fill",
-                title: "Верификация",
-                message: "Отправьте заявку в профиле, если хотите повысить доверие к объявлениям и обращениям."
-            )
-            safetyRow(
-                icon: "message.fill",
-                title: "Спорная ситуация",
-                message: "Сохраняйте переписку в чате Fluffy. Она помогает модераторам понять контекст."
-            )
+        sheetSection("Частые вопросы") {
+            groupedCard {
+                infoRow(
+                    icon: "flag.fill",
+                    tint: AppTheme.amber,
+                    title: "Жалобы на объявления",
+                    message: "Откройте объявление и нажмите “Пожаловаться”. Жалоба попадет модераторам."
+                )
+                rowDivider
+                infoRow(
+                    icon: "shield.fill",
+                    tint: AppTheme.success,
+                    title: "Верификация",
+                    message: "Отправьте заявку в профиле, если хотите повысить доверие к объявлениям и обращениям."
+                )
+                rowDivider
+                infoRow(
+                    icon: "message.fill",
+                    tint: AppTheme.blue,
+                    title: "Спорная ситуация",
+                    message: "Сохраняйте переписку в чате Fluffy. Она помогает модераторам понять контекст."
+                )
+            }
 
             Link(destination: URL(string: "mailto:support@fluffy-pet.ru")!) {
                 Label("Написать в поддержку", systemImage: "envelope.fill")
                     .font(.system(size: 15, weight: .heavy))
                     .frame(maxWidth: .infinity)
+                    .frame(height: 50)
             }
             .buttonStyle(.borderedProminent)
             .tint(AppTheme.accent)
+            .padding(.top, 4)
         }
     }
 
     private var aboutContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            safetyRow(
-                icon: "pawprint.fill",
-                title: "Fluffy",
-                message: "Маркетплейс помощи животным: объявления, передержки, приюты, чаты и модерация."
-            )
-            safetyRow(
-                icon: "server.rack",
-                title: "Backend",
-                message: "Авторизация, профили, объявления, жалобы и модерация обрабатываются сервером."
-            )
-            safetyRow(
-                icon: "number",
-                title: "Версия",
-                message: appVersion
-            )
-        }
-    }
+        VStack(alignment: .leading, spacing: 22) {
+            sheetSection("О приложении") {
+                groupedCard {
+                    infoRow(
+                        icon: "pawprint.fill",
+                        tint: AppTheme.accent,
+                        title: "Fluffy",
+                        message: "Маркетплейс помощи животным: объявления, передержки, приюты, чаты и модерация."
+                    )
+                    rowDivider
+                    infoRow(
+                        icon: "server.rack",
+                        tint: AppTheme.blue,
+                        title: "Backend",
+                        message: "Авторизация, профили, объявления, жалобы и модерация обрабатываются сервером."
+                    )
+                }
+            }
 
-    private func settingsToggle(_ title: String, _ message: String, isOn: Binding<Bool>) -> some View {
-        Toggle(isOn: isOn) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(LocalizedStringKey(title))
-                    .font(.system(size: 15, weight: .heavy))
-                    .foregroundStyle(AppTheme.text)
-                Text(LocalizedStringKey(message))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(AppTheme.secondaryText)
+            sheetSection("Сборка") {
+                groupedCard {
+                    HStack(spacing: 12) {
+                        chipIcon("number", tint: AppTheme.secondaryText)
+
+                        Text("Версия")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(AppTheme.text)
+
+                        Spacer(minLength: 8)
+
+                        Text(appVersion)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .monospacedDigit()
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 11)
+                }
             }
         }
-        .tint(AppTheme.accent)
-        .padding(14)
-        .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: AppTheme.compactRadius, style: .continuous))
-        .shadow(color: .black.opacity(0.035), radius: 12, x: 0, y: 6)
     }
 
-    private func safetyRow(icon: String, title: String, message: String, tint: Color = AppTheme.accent, tintSoft: Color = AppTheme.accentSoft) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(tint)
-                .frame(width: 36, height: 36)
-                .background(tintSoft, in: Circle())
+    private func sheetSection<Content: View>(_ header: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(LocalizedStringKey(header))
+                .font(.system(size: 13, weight: .heavy))
+                .foregroundStyle(AppTheme.secondaryText)
+                .textCase(.uppercase)
+                .kerning(0.6)
+                .padding(.leading, 4)
 
-            VStack(alignment: .leading, spacing: 4) {
+            content()
+        }
+    }
+
+    private func groupedCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(spacing: 0) {
+            content()
+        }
+        .background(AppTheme.surface.opacity(0.72), in: RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+        .fluffyGlass(cornerRadius: AppTheme.cardRadius, tint: .white.opacity(0.12))
+        .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+    }
+
+    private var rowDivider: some View {
+        Divider()
+            .padding(.leading, 60)
+    }
+
+    private func chipIcon(_ icon: String, tint: Color) -> some View {
+        Image(systemName: icon)
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(tint)
+            .frame(width: 34, height: 34)
+            .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+    }
+
+    private func infoRow(icon: String, tint: Color, title: String, message: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            chipIcon(icon, tint: tint)
+
+            VStack(alignment: .leading, spacing: 3) {
                 Text(LocalizedStringKey(title))
-                    .font(.system(size: 15, weight: .heavy))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(AppTheme.text)
                 Text(LocalizedStringKey(message))
                     .font(.system(size: 13, weight: .medium))
@@ -1470,54 +1525,72 @@ struct ProfileActionSheet: View {
 
             Spacer(minLength: 0)
         }
-        .padding(14)
-        .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: AppTheme.compactRadius, style: .continuous))
-        .shadow(color: .black.opacity(0.035), radius: 12, x: 0, y: 6)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
     }
 
-    private enum SecurityButtonStyle {
-        case filled(Color)
-        case outlined(Color)
-    }
-
-    private func securityButton(_ title: String, icon: String, style: SecurityButtonStyle, action: @escaping () -> Void) -> some View {
+    private func actionRow(icon: String, tint: Color, title: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Label(LocalizedStringKey(title), systemImage: icon)
-                .font(.system(size: 15, weight: .heavy))
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
+            HStack(spacing: 12) {
+                chipIcon(icon, tint: tint)
+
+                Text(LocalizedStringKey(title))
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(tint)
+
+                Spacer(minLength: 8)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(AppTheme.secondaryText.opacity(0.55))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 11)
+            .contentShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
         }
         .buttonStyle(.plain)
-        .background {
-            switch style {
-            case let .filled(color):
-                RoundedRectangle(cornerRadius: AppTheme.compactRadius, style: .continuous)
-                    .fill(color)
-                    .shadow(color: color.opacity(0.28), radius: 14, x: 0, y: 8)
-            case let .outlined(color):
-                RoundedRectangle(cornerRadius: AppTheme.compactRadius, style: .continuous)
-                    .fill(color.opacity(0.10))
-            }
-        }
-        .foregroundStyle(styleForegroundColor(style))
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.compactRadius, style: .continuous))
     }
 
-    private func styleForegroundColor(_ style: SecurityButtonStyle) -> Color {
-        switch style {
-        case .filled: .white
-        case let .outlined(color): color
+    private func toggleRow(icon: String, tint: Color, title: String, message: String, isOn: Binding<Bool>) -> some View {
+        Toggle(isOn: isOn) {
+            HStack(alignment: .top, spacing: 12) {
+                chipIcon(icon, tint: tint)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(LocalizedStringKey(title))
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(AppTheme.text)
+                    Text(LocalizedStringKey(message))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
         }
+        .tint(AppTheme.accent)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
     }
 
     private var iconName: String {
         switch action {
-        case .listings: "list.bullet.rectangle"
-        case .reports: "flag"
-        case .notifications: "bell"
-        case .security: "lock.shield"
-        case .help: "bubble.left.and.bubble.right"
-        case .about: "info.circle"
+        case .listings: "list.bullet.rectangle.fill"
+        case .reports: "flag.fill"
+        case .notifications: "bell.badge.fill"
+        case .security: "lock.shield.fill"
+        case .help: "bubble.left.and.bubble.right.fill"
+        case .about: "info.circle.fill"
+        }
+    }
+
+    private var headerTint: Color {
+        switch action {
+        case .listings: AppTheme.accent
+        case .reports: AppTheme.amber
+        case .notifications: AppTheme.blue
+        case .security: AppTheme.success
+        case .help: AppTheme.purple
+        case .about: AppTheme.secondaryText
         }
     }
 

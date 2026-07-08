@@ -5,16 +5,29 @@
 
 import SwiftUI
 
+private struct ProfileMenuItem: Identifiable {
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
+    let icon: String
+    let tint: Color
+    let action: ProfileMenuAction
+
+    var id: ProfileMenuAction { action }
+}
+
 struct ProfileView: View {
     let viewModel: MainViewModel
 
-    private let menuItems: [(LocalizedStringKey, String, ProfileMenuAction)] = [
-        ("profile_menu_listings", "list.bullet.rectangle", .listings),
-        ("Мои обращения", "flag", .reports),
-        ("profile_menu_notifications", "bell", .notifications),
-        ("profile_menu_security", "lock.shield", .security),
-        ("profile_menu_help", "bubble.left.and.bubble.right", .help),
-        ("profile_menu_about", "info.circle", .about)
+    private let accountItems: [ProfileMenuItem] = [
+        ProfileMenuItem(title: "profile_menu_listings", subtitle: "profile_menu_listings_note", icon: "list.bullet.rectangle.fill", tint: AppTheme.accent, action: .listings),
+        ProfileMenuItem(title: "profile_menu_reports", subtitle: "profile_menu_reports_note", icon: "flag.fill", tint: AppTheme.amber, action: .reports),
+        ProfileMenuItem(title: "profile_menu_notifications", subtitle: "profile_menu_notifications_note", icon: "bell.badge.fill", tint: AppTheme.blue, action: .notifications),
+        ProfileMenuItem(title: "profile_menu_security", subtitle: "profile_menu_security_note", icon: "lock.shield.fill", tint: AppTheme.success, action: .security)
+    ]
+
+    private let supportItems: [ProfileMenuItem] = [
+        ProfileMenuItem(title: "profile_menu_help", subtitle: "profile_menu_help_note", icon: "bubble.left.and.bubble.right.fill", tint: AppTheme.purple, action: .help),
+        ProfileMenuItem(title: "profile_menu_about", subtitle: "profile_menu_about_note", icon: "info.circle.fill", tint: AppTheme.secondaryText, action: .about)
     ]
 
     var body: some View {
@@ -247,53 +260,109 @@ struct ProfileView: View {
     }
 
     private var menu: some View {
-        VStack(spacing: 0) {
-            ForEach(Array(menuItems.enumerated()), id: \.offset) { index, item in
-                Button {
-                    viewModel.showProfileAction(item.2)
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: item.1)
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(AppTheme.accent)
-                            .frame(width: 24)
+        VStack(alignment: .leading, spacing: 20) {
+            menuSection(header: "profile_section_account", items: accountItems)
+            menuSection(header: "profile_section_support", items: supportItems)
+        }
+    }
 
-                        Text(item.0)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(AppTheme.text)
+    private func menuSection(header: LocalizedStringKey, items: [ProfileMenuItem]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(header)
+                .font(.system(size: 13, weight: .heavy))
+                .foregroundStyle(AppTheme.secondaryText)
+                .textCase(.uppercase)
+                .kerning(0.6)
+                .padding(.leading, 4)
 
-                        Spacer()
-
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(AppTheme.secondaryText)
+            VStack(spacing: 0) {
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                    Button {
+                        viewModel.showProfileAction(item.action)
+                    } label: {
+                        menuRow(item)
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 15)
-                }
-                .buttonStyle(.plain)
+                    .buttonStyle(.plain)
 
-                if index < menuItems.count - 1 {
-                    Divider()
-                        .padding(.leading, 50)
+                    if index < items.count - 1 {
+                        Divider()
+                            .padding(.leading, 60)
+                    }
                 }
             }
+            .background(AppTheme.surface.opacity(0.72), in: RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+            .fluffyGlass(cornerRadius: AppTheme.cardRadius, tint: .white.opacity(0.12))
+            .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
         }
-        .background(AppTheme.surface.opacity(0.72), in: RoundedRectangle(cornerRadius: AppTheme.cardRadius))
-        .fluffyGlass(cornerRadius: AppTheme.cardRadius, tint: .white.opacity(0.12))
-        .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+    }
+
+    private func menuRow(_ item: ProfileMenuItem) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: item.icon)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(item.tint)
+                .frame(width: 34, height: 34)
+                .background(item.tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(AppTheme.text)
+                Text(item.subtitle)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(AppTheme.secondaryText)
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 8)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(AppTheme.secondaryText.opacity(0.55))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
+        .contentShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
     }
 
     private var signOutButton: some View {
-        Button(role: .destructive) {
-            viewModel.signOut()
-        } label: {
-            Label("profile_sign_out", systemImage: "rectangle.portrait.and.arrow.right")
-                .font(.system(size: 15, weight: .bold))
+        VStack(spacing: 14) {
+            Button(role: .destructive) {
+                viewModel.signOut()
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(AppTheme.danger)
+                        .frame(width: 34, height: 34)
+                        .background(AppTheme.danger.opacity(0.12), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+
+                    Text("profile_sign_out")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(AppTheme.danger)
+
+                    Spacer(minLength: 8)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 11)
+                .contentShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+            }
+            .buttonStyle(.plain)
+            .background(AppTheme.surface.opacity(0.72), in: RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+            .fluffyGlass(cornerRadius: AppTheme.cardRadius, tint: .white.opacity(0.12))
+            .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+
+            Text(appVersionLine)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(AppTheme.secondaryText.opacity(0.7))
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 13)
         }
-        .buttonStyle(.bordered)
+    }
+
+    private var appVersionLine: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+        return "Fluffy \(version) (\(build))"
     }
 }
 

@@ -2626,6 +2626,23 @@
         }
       }
     },
+    "profile_menu_about_note" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version and legal info"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Версия и правовая информация"
+          }
+        }
+      }
+    },
     "profile_menu_help" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2639,6 +2656,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Помощь и поддержка"
+          }
+        }
+      }
+    },
+    "profile_menu_help_note" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact our support team"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Связаться с поддержкой"
           }
         }
       }
@@ -2660,6 +2694,23 @@
         }
       }
     },
+    "profile_menu_listings_note" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posts and moderation status"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Публикации и статусы модерации"
+          }
+        }
+      }
+    },
     "profile_menu_notifications" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2677,6 +2728,57 @@
         }
       }
     },
+    "profile_menu_notifications_note" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Push and activity alerts"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пуши и события в приложении"
+          }
+        }
+      }
+    },
+    "profile_menu_reports" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My reports"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мои обращения"
+          }
+        }
+      }
+    },
+    "profile_menu_reports_note" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complaints you have sent"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отправленные вами жалобы"
+          }
+        }
+      }
+    },
     "profile_menu_security" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2690,6 +2792,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Безопасность"
+          }
+        }
+      }
+    },
+    "profile_menu_security_note" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign-in, devices and data"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вход, устройства и данные"
           }
         }
       }
@@ -2724,6 +2843,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "отзывов"
+          }
+        }
+      }
+    },
+    "profile_section_account" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Аккаунт"
+          }
+        }
+      }
+    },
+    "profile_section_support" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Support"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поддержка"
           }
         }
       }
